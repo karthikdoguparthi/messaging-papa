@@ -414,16 +414,21 @@ export const App: React.FC = () => {
       </div>
 
       {/* 4. Mobile Bottom Nav Bar (Hidden when activeChat is open for full-screen chat experience) */}
-      <div className={`md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0e121c]/95 backdrop-blur-md border-t border-slate-800 flex items-center justify-around z-30 ${
+      <div className={`md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0e121c] border-t border-slate-800 flex items-center justify-around z-30 pb-[env(safe-area-inset-bottom)] ${
         activeChat ? 'hidden' : 'flex'
       }`}>
         <button
-          onClick={() => { setActiveTab('chats'); setActiveChatId(null); }}
-          className={`flex flex-col items-center gap-1 text-xs relative ${
+          type="button"
+          onClick={() => { 
+            setActiveTab('chats'); 
+            setActiveChatId(null); 
+            setActiveChatOverride(null); 
+          }}
+          className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-xs cursor-pointer touch-manipulation select-none active:bg-slate-800/40 ${
             activeTab === 'chats' ? 'text-indigo-400 font-semibold' : 'text-slate-400'
           }`}
         >
-          <div className="relative">
+          <div className="relative pointer-events-none">
             <MessageSquare className="w-5 h-5" />
             {totalUnreadMessages > 0 && (
               <span className="absolute -top-1.5 -right-2 px-1 rounded-full text-[9px] font-bold bg-indigo-500 text-white min-w-4 text-center">
@@ -431,35 +436,53 @@ export const App: React.FC = () => {
               </span>
             )}
           </div>
-          <span>Chats</span>
+          <span className="pointer-events-none">Chats</span>
         </button>
+
         <button
-          onClick={() => { setActiveTab('friends'); setActiveChatId(null); }}
-          className={`flex flex-col items-center gap-1 text-xs ${
+          type="button"
+          onClick={() => { 
+            setActiveTab('friends'); 
+            setActiveChatId(null); 
+            setActiveChatOverride(null); 
+          }}
+          className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-xs cursor-pointer touch-manipulation select-none active:bg-slate-800/40 ${
             activeTab === 'friends' ? 'text-indigo-400 font-semibold' : 'text-slate-400'
           }`}
         >
-          <Users className="w-5 h-5" />
-          <span>Friends</span>
+          <Users className="w-5 h-5 pointer-events-none" />
+          <span className="pointer-events-none">Friends</span>
         </button>
+
         <button
-          onClick={() => { setActiveTab('discover'); setActiveChatId(null); }}
-          className={`flex flex-col items-center gap-1 text-xs ${
+          type="button"
+          onClick={() => { 
+            setActiveTab('discover'); 
+            setActiveChatId(null); 
+            setActiveChatOverride(null); 
+          }}
+          className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-xs cursor-pointer touch-manipulation select-none active:bg-slate-800/40 ${
             activeTab === 'discover' ? 'text-indigo-400 font-semibold' : 'text-slate-400'
           }`}
         >
-          <Compass className="w-5 h-5" />
-          <span>Discover</span>
+          <Compass className="w-5 h-5 pointer-events-none" />
+          <span className="pointer-events-none">Discover</span>
         </button>
+
         {isAdmin && (
           <button
-            onClick={() => { setActiveTab('admin'); setActiveChatId(null); }}
-            className={`flex flex-col items-center gap-1 text-xs ${
+            type="button"
+            onClick={() => { 
+              setActiveTab('admin'); 
+              setActiveChatId(null); 
+              setActiveChatOverride(null); 
+            }}
+            className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-xs cursor-pointer touch-manipulation select-none active:bg-slate-800/40 ${
               activeTab === 'admin' ? 'text-amber-400 font-semibold' : 'text-slate-400'
             }`}
           >
-            <ShieldCheck className="w-5 h-5" />
-            <span>Admin</span>
+            <ShieldCheck className="w-5 h-5 pointer-events-none" />
+            <span className="pointer-events-none">Admin</span>
           </button>
         )}
       </div>
