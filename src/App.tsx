@@ -292,9 +292,9 @@ export const App: React.FC = () => {
         </div>
       </nav>
 
-      {/* 2. Middle Column: Conversations sidebar (Desktop) or Tab View */}
+      {/* 2. Middle Column: Conversations sidebar (Desktop) or Active Tab on mobile */}
       <div className={`w-full md:w-80 lg:w-96 flex flex-col h-full bg-[#0e121c] border-r border-slate-800/80 ${
-        activeChat && 'hidden md:flex'
+        activeChat ? 'hidden md:flex' : (activeTab === 'chats' ? 'flex' : 'hidden md:flex')
       }`}>
         {/* Header */}
         <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
@@ -372,7 +372,7 @@ export const App: React.FC = () => {
       </div>
 
       {/* 3. Main Content: Active Chat or Alternative Tab View */}
-      <div className={`flex-1 flex flex-col h-full bg-[#0a0d14] relative overflow-hidden ${
+      <div className={`flex-1 flex flex-col h-full bg-[#0a0d14] relative overflow-hidden pb-16 md:pb-0 ${
         !activeChat && activeTab === 'chats' ? 'hidden md:flex' : 'flex'
       }`}>
         {activeTab === 'discover' && (
