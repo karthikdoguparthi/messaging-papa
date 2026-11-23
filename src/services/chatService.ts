@@ -10,7 +10,8 @@ import {
   addDoc, 
   updateDoc, 
   deleteDoc,
-  getDocs 
+  getDocs,
+  getDoc 
 } from 'firebase/firestore';
 import { db, isDemoMode } from '../lib/firebase';
 import { Chat, ChatMessage, UserProfile } from '../types';
@@ -24,6 +25,28 @@ export const chatService = {
       return `chat_self_${uid1}`;
     }
     return `chat_${[uid1, uid2].sort().join('_')}`;
+  },
+
+  // Mark all messages as read for this user in this conversation
+  async markChatAsRead(chatId: string, currentUid: string) {
+    if (isDemoMode) {
+      const chat = mockStore.chats.find(c => c.id === chatId);
+      if (chat) {
+        if (!chat.unreadCounts) chat.unreadCounts = {};
+        chat.unreadCounts[currentUid] = 0;
+        chat.unreadCount = 0;
+        mockStore.notify();
+      }
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, 'chats', chatId), {
+        [`unreadCounts.${currentUid}`]: 0
+      });
+    } catch {
+      // Ignore if document not yet created
+    }
   },
 
   // Delete entire conversation thread
@@ -206,6 +229,12 @@ export const chatService = {
         chat.lastMessageText = trimmed;
         chat.lastMessageAt = Date.now();
         chat.lastMessageSenderUid = senderUid;
+        if (!chat.unreadCounts) chat.unreadCounts = {};
+        chat.members.forEach(m => {
+          if (m !== senderUid) {
+            chat.unreadCounts![m] = (chat.unreadCounts![m] || 0) + 1;
+          }
+        });
       }
       mockStore.notify();
       return newMsg;
@@ -224,12 +253,29 @@ export const chatService = {
     // Add encrypted message to Firestore
     const msgRef = await addDoc(collection(db, 'chats', chatId, 'messages'), messageData);
 
-    // Update parent chat preview
-    await updateDoc(doc(db, 'chats', chatId), {
-      lastMessageText: trimmed,
-      lastMessageAt: Date.now(),
-      lastMessageSenderUid: senderUid
-    });
+    // Update parent chat preview and increment unread for other member(s)
+    try {
+      const chatSnap = await getDoc(doc(db, 'chats', chatId));
+      const chatData = chatSnap.data() as Chat | undefined;
+      const updates: any = {
+        lastMessageText: trimmed,
+        lastMessageAt: Date.now(),
+        lastMessageSenderUid: senderUid,
+      };
+
+      if (chatData?.members) {
+        chatData.members.forEach(m => {
+          if (m !== senderUid) {
+            const currentCount = chatData.unreadCounts?.[m] || 0;
+            updates[`unreadCounts.${m}`] = currentCount + 1;
+          }
+        });
+      }
+
+      await updateDoc(doc(db, 'chats', chatId), updates);
+    } catch (err) {
+      console.warn("Could not increment unreadCounts:", err);
+    }
 
     return { id: msgRef.id, ...messageData, text: trimmed };
   },

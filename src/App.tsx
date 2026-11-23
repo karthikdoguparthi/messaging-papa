@@ -43,6 +43,20 @@ export const App: React.FC = () => {
   // Derive activeChat from list or immediate override
   const activeChat = chats.find(c => c.id === activeChatId) || activeChatOverride;
 
+  // Total unread messages across all chats
+  const totalUnreadMessages = chats.reduce((acc, c) => {
+    if (c.pinned) return acc; // Don't count self notes as unread
+    const count = Number((profile?.uid && c.unreadCounts?.[profile.uid]) ?? c.unreadCount ?? 0);
+    return acc + (isNaN(count) ? 0 : count);
+  }, 0);
+
+  // Automatically mark active chat as read when opened or new message arrives
+  useEffect(() => {
+    if (activeChatId && profile?.uid) {
+      chatService.markChatAsRead(activeChatId, profile.uid);
+    }
+  }, [activeChatId, profile?.uid, chats]);
+
   // Subscribe to chats
   useEffect(() => {
     if (!profile || profile.accountStatus !== 'approved') return;
@@ -164,13 +178,18 @@ export const App: React.FC = () => {
             <button
               onClick={() => { setActiveTab('chats'); }}
               title="Chats"
-              className={`p-3 rounded-2xl transition-all ${
+              className={`p-3 rounded-2xl transition-all relative ${
                 activeTab === 'chats'
                   ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
               }`}
             >
               <MessageSquare className="w-5 h-5" />
+              {totalUnreadMessages > 0 && (
+                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500 text-white border-2 border-[#0b0f19] shadow">
+                  {totalUnreadMessages > 99 ? '99+' : totalUnreadMessages}
+                </span>
+              )}
             </button>
 
             <button
@@ -306,9 +325,13 @@ export const App: React.FC = () => {
         <ConversationList
           chats={chats}
           activeChatId={activeChatId}
+          currentUid={profile.uid}
           onSelectChat={(chat) => {
             setActiveChatOverride(chat);
             setActiveChatId(chat.id);
+            if (profile.uid) {
+              chatService.markChatAsRead(chat.id, profile.uid);
+            }
           }}
           onOpenDiscover={() => setActiveTab('discover')}
           onDeleteChat={async (chatId) => {
@@ -393,11 +416,18 @@ export const App: React.FC = () => {
       }`}>
         <button
           onClick={() => { setActiveTab('chats'); setActiveChatId(null); }}
-          className={`flex flex-col items-center gap-1 text-xs ${
+          className={`flex flex-col items-center gap-1 text-xs relative ${
             activeTab === 'chats' ? 'text-indigo-400 font-semibold' : 'text-slate-400'
           }`}
         >
-          <MessageSquare className="w-5 h-5" />
+          <div className="relative">
+            <MessageSquare className="w-5 h-5" />
+            {totalUnreadMessages > 0 && (
+              <span className="absolute -top-1.5 -right-2 px-1 rounded-full text-[9px] font-bold bg-indigo-500 text-white min-w-4 text-center">
+                {totalUnreadMessages > 99 ? '99+' : totalUnreadMessages}
+              </span>
+            )}
+          </div>
           <span>Chats</span>
         </button>
         <button

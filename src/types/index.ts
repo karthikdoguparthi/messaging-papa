@@ -44,6 +44,7 @@ export interface Chat {
   lastMessageAt?: number;
   lastMessageSenderUid?: string;
   unreadCount?: number;
+  unreadCounts?: { [uid: string]: number };
   pinned?: boolean;
   muted?: boolean;
   otherMember?: UserProfile;

@@ -5,6 +5,7 @@ import { MessageSquare, Pin, Trash2 } from 'lucide-react';
 interface ConversationListProps {
   chats: Chat[];
   activeChatId: string | null;
+  currentUid?: string;
   onSelectChat: (chat: Chat) => void;
   onOpenDiscover: () => void;
   onDeleteChat?: (chatId: string) => void;
@@ -13,6 +14,7 @@ interface ConversationListProps {
 export const ConversationList: React.FC<ConversationListProps> = ({
   chats,
   activeChatId,
+  currentUid,
   onSelectChat,
   onOpenDiscover,
   onDeleteChat,
@@ -69,11 +71,15 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                     <p className="text-xs text-slate-400 truncate max-w-[170px]">
                       {chat.lastMessageText || 'No messages yet'}
                     </p>
-                    {(chat.unreadCount || 0) > 0 && (
-                      <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-600 text-white shrink-0">
-                        {chat.unreadCount}
-                      </span>
-                    )}
+                    {(() => {
+                      const raw = (currentUid && chat.unreadCounts?.[currentUid]) ?? chat.unreadCount ?? 0;
+                      const unread = Number(raw) || 0;
+                      return unread > 0 ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-600 text-white shrink-0 animate-pulse">
+                          {unread > 99 ? '99+' : unread}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               </div>
