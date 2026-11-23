@@ -1,0 +1,192 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isUser(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function getUserDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function isApprovedUser() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        getUserDoc(request.auth.uid).data.accountStatus == 'approved';
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/admins/$(request.auth.uid))) ||
+        (request.auth.token.admin == true)
+      );
+    }
+
+    function isBlockedBy(targetUid) {
+      return exists(/databases/$(database)/documents/users/$(targetUid)/blockedUsers/$(request.auth.uid));
+    }
+
+    // Admins collection: read by admins only, write by admins
+    match /admins/{adminUid} {
+      allow read: if isAuthenticated() && (request.auth.uid == adminUid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // Users collection
+    match /users/{uid} {
+      // Any authenticated user can read approved & discoverable users or their own profile
+      allow read: if isAuthenticated() && (
+        request.auth.uid == uid ||
+        (resource.data.accountStatus == 'approved' && resource.data.discoverable == true && !isBlockedBy(uid)) ||
+        isAdmin()
+      );
+      
+      // User can create their profile as 'pending' initially (unless admin)
+      allow create: if isUser(uid) &&
+        request.resource.data.uid == uid &&
+        request.resource.data.accountStatus == 'pending' &&
+        (!request.resource.data.keys().hasAny(['email'])); // never store raw email in public user doc
+        
+      // User can update their own display info, but CANNOT self-approve or change accountStatus
+      allow update: if (
+        isUser(uid) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['accountStatus', 'uid', 'createdAt'])
+      ) || isAdmin();
+
+      allow delete: if isAdmin();
+
+      // Blocked users subcollection: only the owner can manage their blocklist
+      match /blockedUsers/{blockedUid} {
+        allow read, write: if isUser(uid);
+      }
+    }
+
+    // Username reservations: enforce uniqueness
+    match /usernames/{usernameLower} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+        request.resource.data.uid == request.auth.uid &&
+        !exists(/databases/$(database)/documents/usernames/$(usernameLower));
+      allow delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
+      allow update: if false;
+    }
+
+    // Friend Requests
+    match /friendRequests/{requestId} {
+      allow read: if isAuthenticated() && (
+        resource.data.fromUid == request.auth.uid ||
+        resource.data.toUid == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Send friend request: must be approved, cannot friend oneself, cannot be blocked
+      allow create: if isApprovedUser() &&
+        request.resource.data.fromUid == request.auth.uid &&
+        request.resource.data.toUid != request.auth.uid &&
+        request.resource.data.status == 'pending' &&
+        !isBlockedBy(request.resource.data.toUid);
+
+      // Updating request (accept / decline / cancel)
+      allow update: if isApprovedUser() && (
+        (resource.data.toUid == request.auth.uid && request.resource.data.status in ['accepted', 'declined']) ||
+        (resource.data.fromUid == request.auth.uid && request.resource.data.status == 'cancelled')
+      );
+      
+      allow delete: if isApprovedUser() && (
+        resource.data.fromUid == request.auth.uid ||
+        resource.data.toUid == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    // Friendships
+    match /friendships/{friendshipId} {
+      // Members can read friendship status
+      allow read: if isApprovedUser() && (
+        request.auth.uid in resource.data.members || isAdmin()
+      );
+
+      // Create friendship when friend request is accepted
+      allow create: if isApprovedUser() &&
+        request.auth.uid in request.resource.data.members &&
+        request.resource.data.members.size() == 2;
+
+      // Allow removing friend
+      allow delete: if isApprovedUser() &&
+        request.auth.uid in resource.data.members;
+        
+      allow update: if false;
+    }
+
+    // Chats
+    match /chats/{chatId} {
+      // Only chat members or admin can read or inspect chat metadata
+      allow read: if isApprovedUser() && (
+        request.auth.uid in resource.data.members || isAdmin()
+      );
+
+      // Creating a chat requires friendship or member authorization
+      allow create: if isApprovedUser() &&
+        request.auth.uid in request.resource.data.members &&
+        request.resource.data.members.size() == 2;
+
+      // Updating chat (lastMessageText, lastMessageAt, typing, unread)
+      allow update: if isApprovedUser() &&
+        request.auth.uid in resource.data.members;
+
+      allow delete: if isAdmin();
+
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if isApprovedUser() &&
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.members;
+
+        // Creating message: sender must be authenticated user, type must be 'text'
+        allow create: if isApprovedUser() &&
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.members &&
+          request.resource.data.senderUid == request.auth.uid &&
+          request.resource.data.type == 'text' &&
+          request.resource.data.text is string &&
+          request.resource.data.text.size() > 0 &&
+          request.resource.data.text.size() <= 4000;
+
+        // Only sender can edit own message, or any chat member can update reactions
+        allow update: if isApprovedUser() &&
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.members && (
+            (resource.data.senderUid == request.auth.uid && 
+             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'editedAt', 'deletedAt', 'reactions'])) ||
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
+          );
+
+        // Soft deletion preferred via deletedAt, or sender/admin hard delete
+        allow delete: if isApprovedUser() && (
+          resource.data.senderUid == request.auth.uid || isAdmin()
+        );
+      }
+    }
+
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && resource.data.recipientUid == request.auth.uid;
+      // Notifications can be triggered by actors for legitimate actions
+      allow create: if isApprovedUser() && request.resource.data.actorUid == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.recipientUid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow delete: if isAuthenticated() && resource.data.recipientUid == request.auth.uid;
+    }
+
+    // Reports
+    match /reports/{reportId} {
+      allow create: if isAuthenticated() &&
+        request.resource.data.reporterUid == request.auth.uid;
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}
+
