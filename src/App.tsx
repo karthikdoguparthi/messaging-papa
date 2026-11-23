@@ -47,8 +47,42 @@ export const App: React.FC = () => {
   useEffect(() => {
     if (!profile || profile.accountStatus !== 'approved') return;
 
+    // Ensure self-chat document exists so user can message themselves right away
+    chatService.getOrCreateChat(profile.uid, profile.uid).catch(console.warn);
+
     const unsubChats = chatService.subscribeUserChats(profile.uid, (loadedChats) => {
-      setChats(loadedChats);
+      // Pin self-chat to top, with other chats sorted by latest message
+      const selfChatId = `chat_self_${profile.uid}`;
+      const selfIndex = loadedChats.findIndex(c => c.id === selfChatId || (c.members.length === 2 && c.members[0] === profile.uid && c.members[1] === profile.uid));
+      
+      let orderedChats = [...loadedChats];
+      if (selfIndex !== -1) {
+        const [selfChat] = orderedChats.splice(selfIndex, 1);
+        selfChat.pinned = true;
+        selfChat.otherMember = {
+          ...profile,
+          displayName: `${profile.displayName} (You)`,
+        };
+        orderedChats.unshift(selfChat);
+      } else {
+        // If self chat not yet in list snapshot, add virtual pinned item
+        const virtualSelfChat: Chat = {
+          id: selfChatId,
+          type: 'direct',
+          members: [profile.uid, profile.uid],
+          createdAt: profile.createdAt,
+          createdBy: profile.uid,
+          pinned: true,
+          lastMessageText: 'Message yourself / Personal notes',
+          otherMember: {
+            ...profile,
+            displayName: `${profile.displayName} (You)`,
+          }
+        };
+        orderedChats.unshift(virtualSelfChat);
+      }
+
+      setChats(orderedChats);
     });
 
     const unsubNotifs = notificationService.subscribeNotifications(profile.uid, (list) => {

@@ -18,8 +18,11 @@ import { mockStore } from './mockStore';
 import { encryptMessage, decryptMessage } from '../lib/crypto';
 
 export const chatService = {
-  // Deterministic chat ID based on two user IDs
+  // Deterministic chat ID based on two user IDs (or self chat)
   getChatId(uid1: string, uid2: string): string {
+    if (uid1 === uid2) {
+      return `chat_self_${uid1}`;
+    }
     return `chat_${[uid1, uid2].sort().join('_')}`;
   },
 

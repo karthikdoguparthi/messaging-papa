@@ -39,13 +39,25 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                     alt={other?.displayName || 'Chat'}
                     className="w-12 h-12 rounded-full object-cover bg-slate-800 border border-slate-700/80"
                   />
+                  {chat.pinned && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 rounded-full flex items-center justify-center text-white text-[9px] shadow">
+                      <Pin className="w-2.5 h-2.5" />
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <h4 className="font-semibold text-sm text-slate-100 truncate">
-                      {other?.displayName || 'Friend'}
-                    </h4>
+                    <div className="flex items-center gap-1.5 truncate">
+                      <h4 className="font-semibold text-sm text-slate-100 truncate">
+                        {other?.displayName || 'Friend'}
+                      </h4>
+                      {chat.pinned && (
+                        <span className="text-[10px] px-1.5 py-0.2 bg-indigo-500/20 text-indigo-300 rounded font-medium shrink-0">
+                          Pinned
+                        </span>
+                      )}
+                    </div>
                     {chat.lastMessageAt && (
                       <span className="text-[10px] text-slate-500 shrink-0">
                         {new Date(chat.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
