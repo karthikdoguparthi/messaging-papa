@@ -34,13 +34,14 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabView>('chats');
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [activeChatOverride, setActiveChatOverride] = useState<Chat | null>(null);
   const [notifications, setNotifications] = useState<InAppNotification[]>([]);
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [reportTargetUser, setReportTargetUser] = useState<UserProfile | null>(null);
 
-  // Derive activeChat from activeChatId so it never goes stale or points to the wrong chat
-  const activeChat = chats.find(c => c.id === activeChatId) || null;
+  // Derive activeChat from list or immediate override
+  const activeChat = chats.find(c => c.id === activeChatId) || activeChatOverride;
 
   // Subscribe to chats
   useEffect(() => {
@@ -88,9 +89,22 @@ export const App: React.FC = () => {
 
   const handleStartChatWithUser = async (targetUser: UserProfile) => {
     if (!profile) return;
-    const chatId = await chatService.getOrCreateChat(profile.uid, targetUser.uid);
-    setActiveChatId(chatId);
-    setActiveTab('chats');
+    try {
+      const chatId = await chatService.getOrCreateChat(profile.uid, targetUser.uid);
+      const newChatObj: Chat = {
+        id: chatId,
+        type: 'direct',
+        members: [profile.uid, targetUser.uid],
+        createdAt: Date.now(),
+        createdBy: profile.uid,
+        otherMember: targetUser,
+      };
+      setActiveChatOverride(newChatObj);
+      setActiveChatId(chatId);
+      setActiveTab('chats');
+    } catch (err) {
+      console.error("Failed to start chat:", err);
+    }
   };
 
   const handleBlockUser = async (targetUser: UserProfile) => {
@@ -238,11 +252,12 @@ export const App: React.FC = () => {
 
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => setActiveTab('discover')}
-              title="Add friend"
-              className="p-2 rounded-xl bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all cursor-pointer"
+              onClick={() => setActiveTab('friends')}
+              title="Start chat with friend"
+              className="p-2 rounded-xl bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all cursor-pointer flex items-center gap-1 text-xs font-medium"
             >
               <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">New Chat</span>
             </button>
             <button
               onClick={() => setShowSettings(true)}

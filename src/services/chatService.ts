@@ -82,27 +82,40 @@ export const chatService = {
       return mockStore.subscribe(update);
     }
 
+    // Avoid compound index requirement by querying members first and sorting in memory
     const q = query(
       collection(db, 'chats'),
       where('members', 'array-contains', uid),
-      orderBy('lastMessageAt', 'desc'),
-      limit(25)
+      limit(50)
     );
 
-    return onSnapshot(q, async (snap) => {
-      const chats = snap.docs.map(d => ({ id: d.id, ...d.data() } as Chat));
-      // Populate other member's profile for display
-      for (const chat of chats) {
-        const otherUid = chat.members.find(m => m !== uid);
-        if (otherUid) {
-          const userSnap = await getDocs(query(collection(db, 'users'), where('uid', '==', otherUid), limit(1)));
-          if (!userSnap.empty) {
-            chat.otherMember = userSnap.docs[0].data() as UserProfile;
+    return onSnapshot(
+      q, 
+      async (snap) => {
+        const chats = snap.docs
+          .map(d => ({ id: d.id, ...d.data() } as Chat))
+          .sort((a, b) => (b.lastMessageAt || b.createdAt || 0) - (a.lastMessageAt || a.createdAt || 0));
+
+        // Populate other member's profile for display
+        for (const chat of chats) {
+          const otherUid = chat.members.find(m => m !== uid);
+          if (otherUid) {
+            try {
+              const userSnap = await getDocs(query(collection(db, 'users'), where('uid', '==', otherUid), limit(1)));
+              if (!userSnap.empty) {
+                chat.otherMember = userSnap.docs[0].data() as UserProfile;
+              }
+            } catch (err) {
+              console.warn("Could not load other member profile:", err);
+            }
           }
         }
+        callback(chats);
+      },
+      (err) => {
+        console.error("subscribeUserChats error:", err);
       }
-      callback(chats);
-    });
+    );
   },
 
   // Subscribe to messages within a chat with automatic E2EE decryption
