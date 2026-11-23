@@ -83,3 +83,4 @@ A modern, private, mobile-first messaging platform designed exclusively for a cl
   - Desktop: Multi-column view (Nav rail + Conversation list + Active chat).
   - Mobile: Native bottom tab bar navigation with full-screen chat views and back navigation.
 - **Custom Minimal Scrollbars & Animations**: Polished transitions powered by Tailwind CSS v4 and Framer Motion.
+

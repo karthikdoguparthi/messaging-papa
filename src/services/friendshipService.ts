@@ -3,6 +3,7 @@ import {
   query, 
   where, 
   getDocs, 
+  getDoc,
   doc, 
   setDoc, 
   deleteDoc, 
@@ -145,6 +146,19 @@ export const friendshipService = {
 
     return onSnapshot(q, async (snap) => {
       const requests = snap.docs.map(d => ({ id: d.id, ...d.data() } as FriendRequest));
+      // Populate sender profiles
+      for (const req of requests) {
+        if (req.fromUid) {
+          try {
+            const userDoc = await getDoc(doc(db, 'users', req.fromUid));
+            if (userDoc.exists()) {
+              req.fromUser = userDoc.data() as UserProfile;
+            }
+          } catch (err) {
+            console.warn("Could not fetch request fromUser profile:", err);
+          }
+        }
+      }
       callback(requests);
     });
   },
@@ -171,8 +185,21 @@ export const friendshipService = {
       where('status', '==', 'pending')
     );
 
-    return onSnapshot(q, (snap) => {
+    return onSnapshot(q, async (snap) => {
       const requests = snap.docs.map(d => ({ id: d.id, ...d.data() } as FriendRequest));
+      // Populate recipient profiles
+      for (const req of requests) {
+        if (req.toUid) {
+          try {
+            const userDoc = await getDoc(doc(db, 'users', req.toUid));
+            if (userDoc.exists()) {
+              req.toUser = userDoc.data() as UserProfile;
+            }
+          } catch (err) {
+            console.warn("Could not fetch request toUser profile:", err);
+          }
+        }
+      }
       callback(requests);
     });
   },
