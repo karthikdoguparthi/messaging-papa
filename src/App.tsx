@@ -272,8 +272,18 @@ export const App: React.FC = () => {
         <ConversationList
           chats={chats}
           activeChatId={activeChatId}
-          onSelectChat={(chat) => setActiveChatId(chat.id)}
+          onSelectChat={(chat) => {
+            setActiveChatOverride(chat);
+            setActiveChatId(chat.id);
+          }}
           onOpenDiscover={() => setActiveTab('discover')}
+          onDeleteChat={async (chatId) => {
+            await chatService.deleteChat(chatId);
+            if (activeChatId === chatId) {
+              setActiveChatId(null);
+              setActiveChatOverride(null);
+            }
+          }}
         />
 
         {/* Demo Switcher Quick Bar if in Demo Mode */}

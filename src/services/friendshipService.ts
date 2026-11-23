@@ -305,15 +305,34 @@ export const friendshipService = {
     await deleteDoc(doc(db, 'friendRequests', requestId));
   },
 
-  // Remove friend
+  // Remove friend and automatically clean up conversation thread
   async removeFriend(uid1: string, uid2: string) {
     const friendshipId = [uid1, uid2].sort().join('_');
+    const chatId = `chat_${friendshipId}`;
+
     if (isDemoMode) {
       mockStore.friendships = mockStore.friendships.filter(f => f.id !== friendshipId);
+      mockStore.chats = mockStore.chats.filter(c => c.id !== chatId);
+      delete mockStore.messages[chatId];
       mockStore.notify();
       return;
     }
-    await deleteDoc(doc(db, 'friendships', friendshipId));
+
+    try {
+      // 1. Delete friendship record
+      await deleteDoc(doc(db, 'friendships', friendshipId));
+
+      // 2. Delete chat document so it disappears immediately from the chat sidebar
+      await deleteDoc(doc(db, 'chats', chatId));
+
+      // 3. Clean any existing pending friend requests between them
+      const reqId1 = `${uid1}_${uid2}`;
+      const reqId2 = `${uid2}_${uid1}`;
+      try { await deleteDoc(doc(db, 'friendRequests', reqId1)); } catch {}
+      try { await deleteDoc(doc(db, 'friendRequests', reqId2)); } catch {}
+    } catch (err) {
+      console.error("Error in removeFriend:", err);
+    }
   }
 };
 

@@ -9,6 +9,7 @@ import {
   setDoc, 
   addDoc, 
   updateDoc, 
+  deleteDoc,
   getDocs 
 } from 'firebase/firestore';
 import { db, isDemoMode } from '../lib/firebase';
@@ -20,6 +21,21 @@ export const chatService = {
   // Deterministic chat ID based on two user IDs
   getChatId(uid1: string, uid2: string): string {
     return `chat_${[uid1, uid2].sort().join('_')}`;
+  },
+
+  // Delete entire conversation thread
+  async deleteChat(chatId: string) {
+    if (isDemoMode) {
+      mockStore.chats = mockStore.chats.filter(c => c.id !== chatId);
+      delete mockStore.messages[chatId];
+      mockStore.notify();
+      return;
+    }
+    try {
+      await deleteDoc(doc(db, 'chats', chatId));
+    } catch (err) {
+      console.error("Failed to delete chat:", err);
+    }
   },
 
   // Start or get existing direct chat
