@@ -83,15 +83,17 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ chat, onBack, onReportUser, 
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0a0d14] relative">
+    <div className="flex-1 flex flex-col h-[100dvh] md:h-full w-full bg-[#0a0d14] fixed md:relative inset-0 z-40 overflow-hidden">
       {/* Top Chat Header */}
-      <div className="h-16 px-4 md:px-6 border-b border-slate-800/80 bg-[#0f1420]/90 backdrop-blur-md flex items-center justify-between z-10">
-        <div className="flex items-center gap-3">
+      <div className="h-16 shrink-0 px-3 md:px-6 border-b border-slate-800/80 bg-[#0f1420] flex items-center justify-between z-20">
+        <div className="flex items-center gap-2.5">
           <button
+            type="button"
             onClick={onBack}
-            className="md:hidden p-1.5 -ml-1 text-slate-400 hover:text-white"
+            className="p-2 -ml-1 text-slate-300 hover:text-white bg-slate-800/80 active:bg-slate-700 rounded-xl cursor-pointer"
+            title="Back to conversations"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5" />
           </button>
           
           <div className="relative">
@@ -325,18 +327,22 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ chat, onBack, onReportUser, 
       )}
 
       {/* Bottom Text Input Bar */}
-      <form onSubmit={handleSend} className="p-3 md:p-4 bg-[#0f1420] border-t border-slate-800/80 flex items-center gap-2">
+      <form 
+        onSubmit={handleSend} 
+        className="p-2.5 md:p-4 bg-[#0f1420] border-t border-slate-800/80 flex items-center gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+      >
         <input
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Type a private message..."
-          className="flex-1 bg-slate-900/80 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          placeholder="Type a message..."
+          autoFocus={false}
+          className="flex-1 bg-slate-900/90 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
         />
         <button
           type="submit"
           disabled={!text.trim()}
-          className="p-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white rounded-2xl transition-all cursor-pointer shadow-lg shadow-indigo-600/20"
+          className="p-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white rounded-2xl transition-all cursor-pointer shadow-lg shadow-indigo-600/20 shrink-0"
         >
           <Send className="w-4 h-4" />
         </button>

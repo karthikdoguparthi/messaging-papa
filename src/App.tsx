@@ -349,7 +349,7 @@ export const App: React.FC = () => {
       </div>
 
       {/* 3. Main Content: Active Chat or Alternative Tab View */}
-      <div className={`flex-1 flex flex-col h-full bg-[#0a0d14] ${
+      <div className={`flex-1 flex flex-col h-full bg-[#0a0d14] relative overflow-hidden ${
         !activeChat && activeTab === 'chats' ? 'hidden md:flex' : 'flex'
       }`}>
         {activeTab === 'discover' && (
@@ -387,8 +387,10 @@ export const App: React.FC = () => {
         )}
       </div>
 
-      {/* 4. Mobile Bottom Nav Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0e121c]/95 backdrop-blur-md border-t border-slate-800 flex items-center justify-around z-30">
+      {/* 4. Mobile Bottom Nav Bar (Hidden when activeChat is open for full-screen chat experience) */}
+      <div className={`md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0e121c]/95 backdrop-blur-md border-t border-slate-800 flex items-center justify-around z-30 ${
+        activeChat ? 'hidden' : 'flex'
+      }`}>
         <button
           onClick={() => { setActiveTab('chats'); setActiveChatId(null); }}
           className={`flex flex-col items-center gap-1 text-xs ${
