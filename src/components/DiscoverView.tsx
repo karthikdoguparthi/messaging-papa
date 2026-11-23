@@ -49,7 +49,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onStartChat }) => {
         <div className="mb-6">
           <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight">Discover Members</h2>
           <p className="text-xs md:text-sm text-slate-400 mt-1">
-            Search for approved circle members by username (e.g. <span className="text-indigo-400">@karthik</span>).
+            Search for approved circle members by username (e.g. <span className="text-indigo-400">@username</span>).
             Emails are never exposed.
           </p>
         </div>

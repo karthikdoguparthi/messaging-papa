@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, User, Bell, Shield, LogOut, Check } from 'lucide-react';
+import { X, User, Bell, Shield, LogOut, Check, Sun, Moon, Laptop } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -8,6 +9,7 @@ interface SettingsModalProps {
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
   const { profile, updateProfile, signOut, isAdmin } = useAuth();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [displayName, setDisplayName] = useState(profile?.displayName || '');
   const [bio, setBio] = useState(profile?.bio || '');
   const [discoverable, setDiscoverable] = useState(profile?.discoverable ?? true);
@@ -70,6 +72,51 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
               onChange={(e) => setBio(e.target.value)}
               className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"
             />
+          </div>
+
+          {/* Theme Mode Selector */}
+          <div className="p-3.5 rounded-xl bg-slate-900/60 dark:bg-slate-900/60 border border-slate-800">
+            <p className="text-xs font-medium text-slate-200 mb-2">Appearance / Theme</p>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setTheme('system')}
+                className={`flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  theme === 'system'
+                    ? 'bg-indigo-600/20 border-indigo-500 text-indigo-400 shadow-sm'
+                    : 'bg-slate-800/40 border-slate-700/60 text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Laptop className="w-4 h-4" />
+                <span>Auto / Device</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTheme('dark')}
+                className={`flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  theme === 'dark'
+                    ? 'bg-indigo-600/20 border-indigo-500 text-indigo-400 shadow-sm'
+                    : 'bg-slate-800/40 border-slate-700/60 text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Moon className="w-4 h-4" />
+                <span>Dark Mode</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTheme('light')}
+                className={`flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  theme === 'light'
+                    ? 'bg-indigo-600/20 border-indigo-500 text-indigo-400 shadow-sm'
+                    : 'bg-slate-800/40 border-slate-700/60 text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Sun className="w-4 h-4" />
+                <span>Light Mode</span>
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
