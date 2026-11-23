@@ -392,7 +392,10 @@ export const App: React.FC = () => {
             <ChatArea
               key={activeChat.id}
               chat={activeChat}
-              onBack={() => setActiveChatId(null)}
+              onBack={() => {
+                setActiveChatId(null);
+                setActiveChatOverride(null);
+              }}
               onReportUser={(u) => setReportTargetUser(u)}
               onBlockUser={handleBlockUser}
             />

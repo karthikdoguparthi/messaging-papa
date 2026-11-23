@@ -89,11 +89,20 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ chat, onBack, onReportUser, 
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            onClick={onBack}
-            className="p-2 -ml-1 text-slate-300 hover:text-white bg-slate-800/80 active:bg-slate-700 rounded-xl cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onBack();
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onBack();
+            }}
+            className="p-2 -ml-1 text-slate-200 hover:text-white bg-slate-800/90 active:bg-slate-700 rounded-xl cursor-pointer touch-manipulation z-30"
             title="Back to conversations"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-5 h-5 pointer-events-none" />
           </button>
           
           <div className="relative">
