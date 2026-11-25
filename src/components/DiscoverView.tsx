@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, UserPlus, Check, Clock, UserCheck, ShieldAlert } from 'lucide-react';
+import { Search, UserPlus, Check } from 'lucide-react';
 import { UserProfile } from '../types';
 import { friendshipService } from '../services/friendshipService';
 import { useAuth } from '../context/AuthContext';
@@ -14,7 +14,6 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onStartChat }) => {
   const [results, setResults] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [sentMap, setSentMap] = useState<{ [uid: string]: boolean }>({});
-  const [statusMsg, setStatusMsg] = useState<{ [uid: string]: string }>({});
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,83 +35,84 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onStartChat }) => {
     try {
       await friendshipService.sendFriendRequest(profile.uid, target.uid);
       setSentMap(prev => ({ ...prev, [target.uid]: true }));
-      setStatusMsg(prev => ({ ...prev, [target.uid]: 'Request Sent' }));
-    } catch (err: any) {
-      setStatusMsg(prev => ({ ...prev, [target.uid]: err?.message || 'Error' }));
+    } catch (err) {
+      console.error(err);
     }
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0d111a] overflow-y-auto p-4 md:p-8">
+    <div className="flex-1 flex flex-col h-full bg-[var(--bg-canvas)] overflow-y-auto p-6 md:p-8">
       <div className="max-w-2xl mx-auto w-full">
         {/* Title */}
         <div className="mb-6">
-          <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight">Discover Members</h2>
-          <p className="text-xs md:text-sm text-slate-400 mt-1">
-            Search for approved circle members by username (e.g. <span className="text-indigo-400">@username</span>).
-            Emails are never exposed.
+          <h2 className="text-[24px] leading-[1.2] font-medium text-[var(--text-primary)]">Discover members</h2>
+          <p className="text-[14px] text-[var(--text-secondary)] mt-1">
+            Find approved members by username (for example <span className="font-mono text-[var(--text-primary)]">@karthik</span>). Emails are never exposed.
           </p>
         </div>
 
         {/* Search input form */}
-        <form onSubmit={handleSearch} className="relative mb-6">
-          <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by username..."
-            className="w-full pl-12 pr-28 py-3.5 bg-slate-900/90 border border-slate-800 rounded-2xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-inner"
-          />
+        <form onSubmit={handleSearch} className="relative mb-6 flex gap-2">
+          <div className="relative flex-1">
+            <Search size={16} strokeWidth={1.5} className="text-[var(--text-muted)] absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search username"
+              className="w-full h-11 pl-10 pr-4 bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-[10px] text-[14px] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors duration-150"
+            />
+          </div>
           <button
             type="submit"
             disabled={loading || !searchTerm.trim()}
-            className="absolute right-2 top-2 bottom-2 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer"
+            className="h-11 px-5 bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] disabled:opacity-40 text-[var(--btn-primary-text)] text-[14px] font-medium rounded-[10px] transition-colors duration-150 cursor-pointer shrink-0"
           >
-            {loading ? 'Searching...' : 'Search'}
+            {loading ? 'Searching' : 'Search'}
           </button>
         </form>
 
         {/* Results List */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           {results.length > 0 ? (
             results.map((u) => {
               const isSent = sentMap[u.uid];
               return (
                 <div
                   key={u.uid}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-[#121722] border border-slate-800/80 hover:border-slate-700/80 transition-all"
+                  className="flex items-center justify-between p-4 rounded-[12px] bg-[var(--bg-surface)] border border-[var(--border-hairline)]"
                 >
-                  <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
                     <img
                       src={u.photoURL}
                       alt={u.displayName}
-                      className="w-12 h-12 rounded-full object-cover bg-slate-800 border border-slate-700"
+                      className="w-10 h-10 rounded-full object-cover bg-[var(--bg-raised)] border border-[var(--border-hairline)]"
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-100 text-sm truncate">{u.displayName}</span>
-                        <span className="text-xs text-indigo-400 font-mono">@{u.username}</span>
+                        <span className="font-medium text-[var(--text-primary)] text-[14px] truncate">{u.displayName}</span>
+                        <span className="text-[12px] text-[var(--text-muted)] font-mono">@{u.username}</span>
                       </div>
                       {u.bio && (
-                        <p className="text-xs text-slate-400 truncate mt-0.5 max-w-sm">{u.bio}</p>
+                        <p className="text-[13px] text-[var(--text-secondary)] truncate mt-0.5 max-w-sm">{u.bio}</p>
                       )}
                     </div>
                   </div>
 
                   <div className="shrink-0 ml-3">
                     {isSent ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 text-emerald-400 text-xs font-medium border border-emerald-500/20">
-                        <Check className="w-3.5 h-3.5" />
-                        Requested
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[var(--bg-raised)] text-[var(--semantic-positive)] text-[13px] font-medium border border-[var(--border-hairline)]">
+                        <Check size={14} strokeWidth={1.5} />
+                        <span>Requested</span>
                       </span>
                     ) : (
                       <button
+                        type="button"
                         onClick={() => handleSendRequest(u)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600 border border-indigo-500/30 hover:border-indigo-500 text-indigo-300 hover:text-white text-xs font-medium transition-all cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-[8px] bg-[var(--bg-raised)] hover:bg-[var(--border-strong)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[13px] font-medium transition-colors duration-150 cursor-pointer"
                       >
-                        <UserPlus className="w-3.5 h-3.5" />
-                        <span>Add Friend</span>
+                        <UserPlus size={15} strokeWidth={1.5} />
+                        <span>Add friend</span>
                       </button>
                     )}
                   </div>
@@ -120,14 +120,13 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onStartChat }) => {
               );
             })
           ) : searchTerm && !loading ? (
-            <div className="text-center py-12 rounded-2xl border border-dashed border-slate-800 bg-slate-900/30">
-              <Search className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-              <p className="text-sm font-medium text-slate-400">No approved members found matching "{searchTerm}"</p>
-              <p className="text-xs text-slate-500 mt-1">Make sure the username is spelled correctly.</p>
+            <div className="text-center py-12 rounded-[12px] border border-[var(--border-hairline)] bg-[var(--bg-surface)]">
+              <Search size={18} strokeWidth={1.5} className="text-[var(--text-muted)] mx-auto mb-2" />
+              <p className="text-[14px] text-[var(--text-secondary)]">No approved members found matching "{searchTerm}"</p>
             </div>
           ) : (
-            <div className="text-center py-16 text-slate-500 text-xs">
-              Type a username above to find your friends.
+            <div className="text-center py-12 text-[var(--text-muted)] text-[13px]">
+              Enter a username above to find friends
             </div>
           )}
         </div>
@@ -135,4 +134,3 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onStartChat }) => {
     </div>
   );
 };
-

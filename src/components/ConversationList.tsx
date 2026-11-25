@@ -1,5 +1,5 @@
 import React from 'react';
-import { Chat, UserProfile } from '../types';
+import { Chat } from '../types';
 import { MessageSquare, Pin, Trash2 } from 'lucide-react';
 
 interface ConversationListProps {
@@ -20,18 +20,22 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   onDeleteChat,
 }) => {
   return (
-    <div className="flex-1 overflow-y-auto divide-y divide-slate-800/50">
+    <div className="flex-1 overflow-y-auto divide-y divide-[var(--border-hairline)]">
       {chats.length > 0 ? (
         chats.map((chat) => {
           const isActive = chat.id === activeChatId;
           const other = chat.otherMember;
+          const rawUnread = (currentUid && chat.unreadCounts?.[currentUid]) ?? chat.unreadCount ?? 0;
+          const unread = Number(rawUnread) || 0;
 
           return (
             <div
               key={chat.id}
               onClick={() => onSelectChat(chat)}
-              className={`p-3.5 flex items-center justify-between group cursor-pointer transition-colors ${
-                isActive ? 'bg-indigo-950/30 border-l-4 border-indigo-500' : 'hover:bg-slate-900/50'
+              className={`px-4 py-3 flex items-center justify-between group cursor-pointer transition-colors duration-150 ${
+                isActive
+                  ? 'bg-[var(--bg-raised)]'
+                  : 'hover:bg-[var(--bg-surface)]'
               }`}
             >
               <div className="flex items-center gap-3 min-w-0 flex-1 mr-2">
@@ -39,83 +43,81 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                   <img
                     src={other?.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${chat.id}`}
                     alt={other?.displayName || 'Chat'}
-                    className="w-12 h-12 rounded-full object-cover bg-slate-800 border border-slate-700/80"
+                    className="w-10 h-10 rounded-full object-cover bg-[var(--bg-raised)] border border-[var(--border-hairline)]"
                   />
                   {chat.pinned && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 rounded-full flex items-center justify-center text-white text-[9px] shadow">
-                      <Pin className="w-2.5 h-2.5" />
+                    <span
+                      title="Pinned"
+                      className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-full flex items-center justify-center text-[var(--text-secondary)]"
+                    >
+                      <Pin size={10} strokeWidth={1.5} />
                     </span>
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-1.5 truncate">
-                      <h4 className="font-semibold text-sm text-slate-100 truncate">
+                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <h4 className="font-medium text-[14px] text-[var(--text-primary)] truncate">
                         {other?.displayName || 'Friend'}
                       </h4>
                       {chat.pinned && (
-                        <span className="text-[10px] px-1.5 py-0.2 bg-indigo-500/20 text-indigo-300 rounded font-medium shrink-0">
-                          Pinned
+                        <span className="text-[11px] text-[var(--text-muted)] font-mono shrink-0">
+                          Notes
                         </span>
                       )}
                     </div>
                     {chat.lastMessageAt && (
-                      <span className="text-[10px] text-slate-500 shrink-0">
+                      <span className="text-[11px] text-[var(--text-muted)] font-mono tabular-nums shrink-0">
                         {new Date(chat.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-slate-400 truncate max-w-[170px]">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[13px] text-[var(--text-secondary)] truncate">
                       {chat.lastMessageText || 'No messages yet'}
                     </p>
-                    {(() => {
-                      const raw = (currentUid && chat.unreadCounts?.[currentUid]) ?? chat.unreadCount ?? 0;
-                      const unread = Number(raw) || 0;
-                      return unread > 0 ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-600 text-white shrink-0 animate-pulse">
-                          {unread > 99 ? '99+' : unread}
-                        </span>
-                      ) : null;
-                    })()}
+                    {unread > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-[6px] text-[11px] font-mono font-medium tabular-nums bg-[var(--accent)] text-[var(--accent-text)] shrink-0">
+                        {unread > 99 ? '99+' : unread}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {onDeleteChat && (
+              {onDeleteChat && !chat.pinned && (
                 <button
                   type="button"
-                  title="Delete chat"
+                  title="Delete conversation"
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (confirm("Delete this conversation?")) {
+                    if (confirm('Delete this conversation?')) {
                       onDeleteChat(chat.id);
                     }
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-1.5 text-[var(--text-muted)] hover:text-[var(--semantic-negative)] rounded-[6px] transition-[opacity,color] duration-150 cursor-pointer"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 size={15} strokeWidth={1.5} />
                 </button>
               )}
             </div>
           );
         })
       ) : (
-        <div className="p-8 text-center text-slate-500 text-xs">
-          <MessageSquare className="w-8 h-8 mx-auto mb-2 text-slate-600" />
-          <p className="font-medium">No conversations yet.</p>
+        <div className="p-8 text-center">
+          <MessageSquare size={20} strokeWidth={1.5} className="mx-auto mb-2 text-[var(--text-muted)]" />
+          <p className="text-[13px] text-[var(--text-secondary)]">No conversations yet</p>
           <button
+            type="button"
             onClick={onOpenDiscover}
-            className="mt-3 px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-500 transition-colors cursor-pointer"
+            className="mt-3 px-3 py-1.5 rounded-[8px] bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] text-[13px] font-medium hover:bg-[var(--btn-primary-hover)] transition-colors duration-150 cursor-pointer"
           >
-            Find Friends
+            Find friends
           </button>
         </div>
       )}
     </div>
   );
 };
-
-

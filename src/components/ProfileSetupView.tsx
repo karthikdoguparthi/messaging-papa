@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, AtSign, CheckCircle2, AlertCircle } from 'lucide-react';
+import { User, AtSign, Check, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
 
@@ -19,11 +19,11 @@ export const ProfileSetupView: React.FC = () => {
 
     const trimmedUsername = username.trim().toLowerCase();
     if (!trimmedUsername || trimmedUsername.length < 3) {
-      setError('Username must be at least 3 characters.');
+      setError('Username must be at least 3 characters');
       return;
     }
     if (!/^[a-z0-9_]+$/.test(trimmedUsername)) {
-      setError('Username may only contain letters, numbers, and underscores.');
+      setError('Use letters, numbers, and underscores only');
       return;
     }
 
@@ -33,7 +33,7 @@ export const ProfileSetupView: React.FC = () => {
       setChecking(false);
 
       if (!isAvailable) {
-        setError('That username is already claimed. Pick another.');
+        setError('That username is already taken');
         return;
       }
 
@@ -41,102 +41,102 @@ export const ProfileSetupView: React.FC = () => {
       const photo = user?.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${trimmedUsername}`;
       await setupProfile(trimmedUsername, displayName || trimmedUsername, photo, bio);
     } catch (err: any) {
-      setError(err?.message || 'Failed to complete profile setup.');
+      setError(err?.message || 'Failed to complete profile setup');
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#0a0d14]">
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md bg-[#111622] border border-slate-800 rounded-2xl p-7 shadow-2xl"
+    <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--bg-canvas)] text-[var(--text-primary)]">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-[420px] bg-[var(--bg-surface)] border border-[var(--border-hairline)] rounded-[16px] p-6 md:p-8"
       >
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mx-auto mb-3 flex items-center justify-center">
-            <User className="w-7 h-7" />
+        <div className="mb-6">
+          <div className="w-10 h-10 rounded-[10px] bg-[var(--bg-raised)] border border-[var(--border-hairline)] text-[var(--text-secondary)] mb-4 flex items-center justify-center">
+            <User size={18} strokeWidth={1.5} />
           </div>
-          <h2 className="text-xl font-bold text-white">Create Your Profile</h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Choose a unique username so your friends can discover and add you.
+          <h2 className="text-[22px] leading-[1.2] font-medium text-[var(--text-primary)]">Create your profile</h2>
+          <p className="text-[13px] text-[var(--text-secondary)] mt-1.5">
+            Choose a unique handle so friends can find you
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="mb-4 p-3 rounded-[10px] bg-[var(--bg-canvas)] border border-[var(--semantic-negative)]/30 text-[var(--semantic-negative)] text-[13px] flex items-center gap-2">
+            <AlertCircle size={16} strokeWidth={1.5} className="shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              Username <span className="text-indigo-400">*</span>
+            <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">
+              Username
             </label>
             <div className="relative">
-              <AtSign className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <AtSign size={16} strokeWidth={1.5} className="text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                placeholder="e.g. karthik"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-900/80 border border-slate-700/80 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                placeholder="karthik"
+                className="w-full h-10 pl-9 pr-3 bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-[8px] text-[14px] font-mono text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors duration-150"
               />
             </div>
-            <p className="text-[11px] text-slate-500 mt-1">
-              Used for friend discovery. Letters, numbers, and underscores only.
+            <p className="text-[12px] text-[var(--text-muted)] mt-1">
+              Letters, numbers, and underscores only
             </p>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              Display Name
+            <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">
+              Display name
             </label>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Your Name"
-              className="w-full px-3.5 py-2.5 bg-slate-900/80 border border-slate-700/80 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              placeholder="Your name"
+              className="w-full h-10 px-3 bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-[8px] text-[14px] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors duration-150"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              Short Bio (Optional)
+            <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">
+              Bio
             </label>
             <textarea
               rows={2}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="Say something brief..."
-              className="w-full px-3.5 py-2 bg-slate-900/80 border border-slate-700/80 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
+              placeholder="Optional short note"
+              className="w-full p-3 bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-[8px] text-[14px] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors duration-150 resize-none"
             />
           </div>
 
           <button
             type="submit"
             disabled={checking || saving}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium rounded-xl text-sm transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full h-11 bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] disabled:opacity-50 text-[var(--btn-primary-text)] font-medium rounded-[10px] text-[14px] transition-[background-color,transform] duration-150 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
           >
-            {saving ? 'Creating profile...' : 'Complete & Request Access'}
-            <CheckCircle2 className="w-4 h-4" />
+            <span>{saving ? 'Creating profile' : 'Complete and request access'}</span>
+            <Check size={16} strokeWidth={1.5} />
           </button>
         </form>
 
         <button
           type="button"
           onClick={() => signOut()}
-          className="w-full mt-4 py-2 px-3 text-xs text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all text-center cursor-pointer flex items-center justify-center gap-1.5"
+          className="w-full mt-3 h-9 text-[13px] text-[var(--text-muted)] hover:text-[var(--semantic-negative)] rounded-[8px] transition-colors duration-150 text-center cursor-pointer"
         >
-          <span>Cancel and Sign Out</span>
+          Cancel and sign out
         </button>
       </motion.div>
     </div>
   );
 };
-

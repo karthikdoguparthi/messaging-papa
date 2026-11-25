@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Bell, Shield, LogOut, Check, Sun, Moon, Laptop } from 'lucide-react';
+import { X, LogOut, Check, Sun, Moon, Laptop } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -8,8 +8,8 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
-  const { profile, updateProfile, signOut, isAdmin } = useAuth();
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { profile, updateProfile, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [displayName, setDisplayName] = useState(profile?.displayName || '');
   const [bio, setBio] = useState(profile?.bio || '');
   const [discoverable, setDiscoverable] = useState(profile?.discoverable ?? true);
@@ -31,129 +31,133 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-[#121722] border border-slate-800 rounded-2xl p-6 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px]">
+      <div
+        className="w-full max-w-md bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-[16px] p-6 relative"
+        style={{ boxShadow: 'var(--shadow-floating)' }}
+      >
         <button
+          type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 text-slate-400 hover:text-white"
+          className="absolute right-4 top-4 p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] rounded-[6px] cursor-pointer"
         >
-          <X className="w-5 h-5" />
+          <X size={18} strokeWidth={1.5} />
         </button>
 
-        <h3 className="text-base font-bold text-white mb-4">Settings & Profile</h3>
+        <h3 className="text-[18px] font-medium text-[var(--text-primary)] mb-5">Settings and profile</h3>
 
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1">Username</label>
+            <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1">Username</label>
             <input
               type="text"
               disabled
               value={`@${profile?.username}`}
-              className="w-full px-3.5 py-2 bg-slate-900/50 border border-slate-800 rounded-xl text-xs text-slate-400 font-mono"
+              className="w-full h-10 px-3 bg-[var(--bg-canvas)] border border-[var(--border-hairline)] rounded-[8px] text-[13px] text-[var(--text-muted)] font-mono"
             />
-            <p className="text-[10px] text-slate-500 mt-1">Usernames cannot be changed once created.</p>
+            <p className="text-[12px] text-[var(--text-muted)] mt-1">Usernames are permanent</p>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Display Name</label>
+            <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1">Display name</label>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+              className="w-full h-10 px-3 bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-[8px] text-[14px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] transition-colors duration-150"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Bio</label>
+            <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1">Bio</label>
             <textarea
               rows={2}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"
+              className="w-full p-3 bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-[8px] text-[14px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] transition-colors duration-150 resize-none"
             />
           </div>
 
           {/* Theme Mode Selector */}
-          <div className="p-3.5 rounded-xl bg-slate-900/60 dark:bg-slate-900/60 border border-slate-800">
-            <p className="text-xs font-medium text-slate-200 mb-2">Appearance / Theme</p>
+          <div className="p-3 rounded-[10px] bg-[var(--bg-canvas)] border border-[var(--border-hairline)]">
+            <p className="text-[13px] font-medium text-[var(--text-primary)] mb-2">Appearance</p>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setTheme('system')}
-                className={`flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                className={`flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-[8px] text-[12px] font-medium border transition-colors duration-150 cursor-pointer ${
                   theme === 'system'
-                    ? 'bg-indigo-600/20 border-indigo-500 text-indigo-400 shadow-sm'
-                    : 'bg-slate-800/40 border-slate-700/60 text-slate-400 hover:text-slate-200'
+                    ? 'bg-[var(--bg-raised)] border-[var(--accent)] text-[var(--text-primary)]'
+                    : 'bg-transparent border-[var(--border-hairline)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                 }`}
               >
-                <Laptop className="w-4 h-4" />
-                <span>Auto / Device</span>
+                <Laptop size={16} strokeWidth={1.5} />
+                <span>Auto</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setTheme('dark')}
-                className={`flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                className={`flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-[8px] text-[12px] font-medium border transition-colors duration-150 cursor-pointer ${
                   theme === 'dark'
-                    ? 'bg-indigo-600/20 border-indigo-500 text-indigo-400 shadow-sm'
-                    : 'bg-slate-800/40 border-slate-700/60 text-slate-400 hover:text-slate-200'
+                    ? 'bg-[var(--bg-raised)] border-[var(--accent)] text-[var(--text-primary)]'
+                    : 'bg-transparent border-[var(--border-hairline)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                 }`}
               >
-                <Moon className="w-4 h-4" />
-                <span>Dark Mode</span>
+                <Moon size={16} strokeWidth={1.5} />
+                <span>Dark</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setTheme('light')}
-                className={`flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                className={`flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-[8px] text-[12px] font-medium border transition-colors duration-150 cursor-pointer ${
                   theme === 'light'
-                    ? 'bg-indigo-600/20 border-indigo-500 text-indigo-400 shadow-sm'
-                    : 'bg-slate-800/40 border-slate-700/60 text-slate-400 hover:text-slate-200'
+                    ? 'bg-[var(--bg-raised)] border-[var(--accent)] text-[var(--text-primary)]'
+                    : 'bg-transparent border-[var(--border-hairline)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                 }`}
               >
-                <Sun className="w-4 h-4" />
-                <span>Light Mode</span>
+                <Sun size={16} strokeWidth={1.5} />
+                <span>Light</span>
               </button>
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+          <label className="flex items-center justify-between p-3 rounded-[10px] bg-[var(--bg-canvas)] border border-[var(--border-hairline)] cursor-pointer">
             <div>
-              <p className="text-xs font-medium text-slate-200">Discoverable by Username</p>
-              <p className="text-[11px] text-slate-500">Allow friends to find your account when searching.</p>
+              <p className="text-[13px] font-medium text-[var(--text-primary)]">Discoverable by username</p>
+              <p className="text-[12px] text-[var(--text-muted)]">Allow friends to find your handle</p>
             </div>
             <input
               type="checkbox"
               checked={discoverable}
               onChange={(e) => setDiscoverable(e.target.checked)}
-              className="w-4 h-4 accent-indigo-600 rounded cursor-pointer"
+              className="w-4 h-4 accent-[var(--accent)] rounded cursor-pointer"
             />
-          </div>
+          </label>
 
           <div className="flex items-center gap-2 pt-2">
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+              className="flex-1 h-10 bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] text-[var(--btn-primary-text)] rounded-[8px] text-[13px] font-medium transition-colors duration-150 flex items-center justify-center gap-1.5 cursor-pointer"
             >
               {saved ? (
                 <>
-                  <Check className="w-4 h-4 text-emerald-400" />
-                  <span>Saved!</span>
+                  <Check size={15} strokeWidth={1.5} className="text-[var(--semantic-positive)]" />
+                  <span>Saved</span>
                 </>
               ) : (
-                <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+                <span>{saving ? 'Saving' : 'Save changes'}</span>
               )}
             </button>
             <button
               type="button"
               onClick={() => signOut()}
-              className="px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              className="px-4 h-10 bg-[var(--bg-raised)] hover:text-[var(--semantic-negative)] text-[var(--text-secondary)] border border-[var(--border-hairline)] rounded-[8px] text-[13px] font-medium flex items-center gap-1.5 transition-colors duration-150 cursor-pointer"
             >
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
+              <LogOut size={15} strokeWidth={1.5} />
+              <span>Sign out</span>
             </button>
           </div>
         </form>
@@ -161,4 +165,3 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
     </div>
   );
 };
-

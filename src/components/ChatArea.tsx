@@ -1,22 +1,20 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { 
-  Send, 
-  Smile, 
-  Reply, 
-  Trash2, 
-  Edit2, 
-  X, 
-  MoreVertical, 
-  ShieldAlert, 
-  UserX, 
-  Check, 
+import {
+  Send,
+  Smile,
+  Reply,
+  Trash2,
+  Edit2,
+  X,
+  MoreVertical,
+  ShieldAlert,
+  UserX,
   CheckCheck,
   ChevronLeft,
   Lock
 } from 'lucide-react';
 import { Chat, ChatMessage, UserProfile } from '../types';
 import { chatService } from '../services/chatService';
-import { privacyService } from '../services/adminService';
 import { useAuth } from '../context/AuthContext';
 
 interface ChatAreaProps {
@@ -83,10 +81,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ chat, onBack, onReportUser, 
   };
 
   return (
-    <div className="flex-1 flex flex-col h-[100dvh] md:h-full w-full bg-[#0a0d14] fixed md:relative inset-0 z-40 overflow-hidden">
+    <div className="flex-1 flex flex-col h-[100dvh] md:h-full w-full bg-[var(--bg-canvas)] fixed md:relative inset-0 z-40 overflow-hidden">
       {/* Top Chat Header */}
-      <div className="h-16 shrink-0 px-3 md:px-6 border-b border-slate-800/80 bg-[#0f1420] flex items-center justify-between z-20">
-        <div className="flex items-center gap-2.5">
+      <div className="h-16 shrink-0 px-4 md:px-6 border-b border-[var(--border-hairline)] bg-[var(--bg-sidebar)] flex items-center justify-between z-20">
+        <div className="flex items-center gap-3 min-w-0">
           <button
             type="button"
             onClick={(e) => {
@@ -99,70 +97,82 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ chat, onBack, onReportUser, 
               e.stopPropagation();
               onBack();
             }}
-            className="p-2 -ml-1 text-slate-200 hover:text-white bg-slate-800/90 active:bg-slate-700 rounded-xl cursor-pointer touch-manipulation z-30"
-            title="Back to conversations"
+            className="md:hidden p-2 -ml-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--bg-raised)] rounded-[8px] cursor-pointer touch-manipulation z-30"
+            title="Back"
           >
-            <ChevronLeft className="w-5 h-5 pointer-events-none" />
+            <ChevronLeft size={18} strokeWidth={1.5} className="pointer-events-none" />
           </button>
-          
-          <div className="relative">
+
+          <div className="relative shrink-0">
             <img
               src={chat.otherMember?.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${chat.id}`}
               alt={chat.otherMember?.displayName || 'Friend'}
-              className="w-10 h-10 rounded-full object-cover bg-slate-800 border border-slate-700"
+              className="w-9 h-9 rounded-full object-cover bg-[var(--bg-raised)] border border-[var(--border-hairline)]"
             />
             {chat.otherMember && (
-              <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[#0f1420] ${
-                isRecent(chat.otherMember.lastSeenAt) ? 'bg-emerald-500' : 'bg-slate-500'
+              <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[var(--bg-sidebar)] ${
+                isRecent(chat.otherMember.lastSeenAt) ? 'bg-[var(--semantic-positive)]' : 'bg-[var(--text-muted)]'
               }`} />
             )}
           </div>
 
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h3 className="font-semibold text-slate-100 text-sm">{chat.otherMember?.displayName || 'Friend'}</h3>
-              <span title="End-to-End Encrypted (AES-GCM)" className="inline-flex items-center">
-                <Lock className="w-3 h-3 text-emerald-400" />
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium text-[14px] text-[var(--text-primary)] truncate">
+                {chat.otherMember?.displayName || 'Friend'}
+              </h3>
+              <span
+                title="End-to-end encrypted (AES-GCM)"
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] border border-[var(--border-hairline)] bg-[var(--bg-canvas)] text-[11px] font-mono text-[var(--accent)] shrink-0"
+              >
+                <Lock size={11} strokeWidth={1.5} />
+                <span className="hidden sm:inline">E2EE</span>
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-mono">
-              @{chat.otherMember?.username || 'user'} • {isRecent(chat.otherMember?.lastSeenAt || 0) ? 'Active now' : 'Offline'}
+            <p className="text-[12px] text-[var(--text-muted)] font-mono truncate">
+              @{chat.otherMember?.username || 'user'} · {isRecent(chat.otherMember?.lastSeenAt || 0) ? 'Online' : 'Offline'}
             </p>
           </div>
         </div>
 
-        {/* Dropdown Menu for options */}
+        {/* Options Menu */}
         <div className="relative">
           <button
+            type="button"
             onClick={() => setShowOptionsDropdown(!showOptionsDropdown)}
-            className="p-2 text-slate-400 hover:text-slate-200 rounded-xl hover:bg-slate-800/80 transition-colors cursor-pointer"
+            className="p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] rounded-[8px] hover:bg-[var(--bg-raised)] transition-colors duration-150 cursor-pointer"
           >
-            <MoreVertical className="w-5 h-5" />
+            <MoreVertical size={18} strokeWidth={1.5} />
           </button>
 
           {showOptionsDropdown && (
-            <div className="absolute right-0 top-12 w-48 bg-[#151a26] border border-slate-800 rounded-xl shadow-2xl py-1 z-50 text-xs">
+            <div
+              className="absolute right-0 top-11 w-48 bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-[10px] py-1 z-50 text-[13px]"
+              style={{ boxShadow: 'var(--shadow-floating)' }}
+            >
               {chat.otherMember && (
                 <>
                   <button
+                    type="button"
                     onClick={() => {
                       onReportUser(chat.otherMember!);
                       setShowOptionsDropdown(false);
                     }}
-                    className="w-full px-4 py-2.5 text-left text-slate-300 hover:bg-slate-800 flex items-center gap-2"
+                    className="w-full px-3 py-2 text-left text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-raised)] flex items-center gap-2 cursor-pointer"
                   >
-                    <ShieldAlert className="w-4 h-4 text-amber-400" />
-                    <span>Report Account</span>
+                    <ShieldAlert size={15} strokeWidth={1.5} />
+                    <span>Report account</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => {
                       onBlockUser(chat.otherMember!);
                       setShowOptionsDropdown(false);
                     }}
-                    className="w-full px-4 py-2.5 text-left text-rose-400 hover:bg-rose-500/10 flex items-center gap-2"
+                    className="w-full px-3 py-2 text-left text-[var(--semantic-negative)] hover:bg-[var(--bg-raised)] flex items-center gap-2 cursor-pointer"
                   >
-                    <UserX className="w-4 h-4" />
-                    <span>Block Member</span>
+                    <UserX size={15} strokeWidth={1.5} />
+                    <span>Block member</span>
                   </button>
                 </>
               )}
@@ -172,11 +182,14 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ chat, onBack, onReportUser, 
       </div>
 
       {/* Messages Feed */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 space-y-3">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 text-xs">
-            <p>End-to-end encrypted private friendship chat.</p>
-            <p className="mt-1">Send a message to start the conversation!</p>
+          <div className="h-full flex flex-col items-center justify-center text-center">
+            <div className="w-10 h-10 rounded-[10px] bg-[var(--bg-surface)] border border-[var(--border-hairline)] flex items-center justify-center text-[var(--accent)] mb-3">
+              <Lock size={16} strokeWidth={1.5} />
+            </div>
+            <p className="text-[14px] text-[var(--text-secondary)]">End-to-end encrypted conversation</p>
+            <p className="text-[13px] text-[var(--text-muted)] mt-1">Send a message to begin</p>
           </div>
         ) : (
           messages.map((msg) => {
@@ -188,56 +201,60 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ chat, onBack, onReportUser, 
                 key={msg.id}
                 className={`group flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
               >
-                {/* Reply quote preview if any */}
+                {/* Reply quote preview */}
                 {msg.replyToMessage && (
-                  <div className={`text-[11px] mb-1 px-3 py-1 rounded-t-lg bg-slate-800/60 border-l-2 border-indigo-400 text-slate-300 max-w-sm ${isMe ? 'mr-1' : 'ml-1'}`}>
-                    <span className="font-semibold text-indigo-400">{msg.replyToMessage.senderName}: </span>
+                  <div className={`text-[12px] mb-1 px-3 py-1.5 rounded-[8px] bg-[var(--bg-surface)] border-l-2 border-[var(--accent)] text-[var(--text-secondary)] max-w-sm ${isMe ? 'mr-1' : 'ml-1'}`}>
+                    <span className="font-medium text-[var(--text-primary)]">{msg.replyToMessage.senderName}: </span>
                     <span className="truncate">{msg.replyToMessage.text}</span>
                   </div>
                 )}
 
-                <div className="relative flex items-center gap-2 max-w-[85%] md:max-w-[70%]">
-                  {/* Action buttons (Reply, React, Edit, Delete) - shown on hover */}
+                <div className="relative flex items-center gap-2 max-w-[85%] md:max-w-[68%]">
+                  {/* Action buttons */}
                   {!isDeleted && (
-                    <div className={`hidden group-hover:flex items-center gap-1 bg-[#151a26] border border-slate-800 rounded-lg p-0.5 shadow-md ${
+                    <div className={`hidden group-hover:flex items-center gap-0.5 bg-[var(--bg-surface)] border border-[var(--border-hairline)] rounded-[8px] p-1 ${
                       isMe ? 'order-first mr-1' : 'order-last ml-1'
                     }`}>
                       <button
+                        type="button"
                         onClick={() => setActiveReactionPickerMsgId(activeReactionPickerMsgId === msg.id ? null : msg.id)}
-                        className="p-1 hover:text-amber-400 text-slate-400 transition-colors"
+                        className="p-1 hover:text-[var(--text-primary)] text-[var(--text-muted)] transition-colors duration-150 cursor-pointer"
                         title="React"
                       >
-                        <Smile className="w-3.5 h-3.5" />
+                        <Smile size={14} strokeWidth={1.5} />
                       </button>
                       <button
+                        type="button"
                         onClick={() => {
                           setReplyingTo(msg);
                           setEditingMessage(null);
                         }}
-                        className="p-1 hover:text-indigo-400 text-slate-400 transition-colors"
+                        className="p-1 hover:text-[var(--text-primary)] text-[var(--text-muted)] transition-colors duration-150 cursor-pointer"
                         title="Reply"
                       >
-                        <Reply className="w-3.5 h-3.5" />
+                        <Reply size={14} strokeWidth={1.5} />
                       </button>
                       {isMe && (
                         <>
                           <button
+                            type="button"
                             onClick={() => {
                               setEditingMessage(msg);
                               setText(msg.text);
                               setReplyingTo(null);
                             }}
-                            className="p-1 hover:text-emerald-400 text-slate-400 transition-colors"
+                            className="p-1 hover:text-[var(--text-primary)] text-[var(--text-muted)] transition-colors duration-150 cursor-pointer"
                             title="Edit"
                           >
-                            <Edit2 className="w-3.5 h-3.5" />
+                            <Edit2 size={14} strokeWidth={1.5} />
                           </button>
                           <button
+                            type="button"
                             onClick={() => chatService.deleteMessage(chat.id, msg.id)}
-                            className="p-1 hover:text-rose-400 text-slate-400 transition-colors"
+                            className="p-1 hover:text-[var(--semantic-negative)] text-[var(--text-muted)] transition-colors duration-150 cursor-pointer"
                             title="Delete"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 size={14} strokeWidth={1.5} />
                           </button>
                         </>
                       )}
@@ -246,33 +263,37 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ chat, onBack, onReportUser, 
 
                   {/* Message Bubble */}
                   <div
-                    className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                    className={`px-3.5 py-2.5 rounded-[12px] text-[14px] leading-[20px] ${
                       isDeleted
-                        ? 'bg-slate-900/60 text-slate-500 italic border border-slate-800/40'
+                        ? 'bg-[var(--bg-surface)] text-[var(--text-muted)] border border-[var(--border-hairline)]'
                         : isMe
-                        ? 'bg-indigo-600 text-white rounded-br-xs shadow-md shadow-indigo-600/10'
-                        : 'bg-[#151a26] text-slate-100 rounded-bl-xs border border-slate-800/80'
+                        ? 'bg-[var(--bubble-own-bg)] text-[var(--bubble-own-text)] border border-[var(--border-hairline)]'
+                        : 'bg-[var(--bubble-other-bg)] text-[var(--bubble-other-text)] border border-[var(--border-hairline)]'
                     }`}
                   >
                     <p className="whitespace-pre-wrap break-words">{msg.text}</p>
-                    <div className="flex items-center justify-end gap-1.5 mt-1 text-[10px] opacity-70">
+                    <div className="flex items-center justify-end gap-1.5 mt-1 text-[11px] font-mono tabular-nums opacity-65">
                       <span>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                      {msg.editedAt && <span>(edited)</span>}
-                      {isMe && <CheckCheck className="w-3 h-3" />}
+                      {msg.editedAt && <span>edited</span>}
+                      {isMe && <CheckCheck size={12} strokeWidth={1.5} />}
                     </div>
                   </div>
                 </div>
 
-                {/* Reaction Picker Popover */}
+                {/* Reaction Picker */}
                 {activeReactionPickerMsgId === msg.id && (
-                  <div className={`flex items-center gap-1.5 mt-1.5 p-1.5 bg-[#181f2e] border border-slate-700/80 rounded-full shadow-lg z-20 ${
-                    isMe ? 'mr-2' : 'ml-2'
-                  }`}>
+                  <div
+                    className={`flex items-center gap-1 mt-1.5 p-1.5 bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-[10px] z-20 ${
+                      isMe ? 'mr-1' : 'ml-1'
+                    }`}
+                    style={{ boxShadow: 'var(--shadow-floating)' }}
+                  >
                     {COMMON_REACTIONS.map((emoji) => (
                       <button
+                        type="button"
                         key={emoji}
                         onClick={() => handleToggleReaction(msg.id, emoji)}
-                        className="p-1 hover:scale-125 transition-transform text-sm cursor-pointer"
+                        className="px-1.5 py-0.5 hover:bg-[var(--bg-raised)] rounded-[6px] transition-colors duration-150 text-[14px] cursor-pointer"
                       >
                         {emoji}
                       </button>
@@ -280,21 +301,22 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ chat, onBack, onReportUser, 
                   </div>
                 )}
 
-                {/* Render Attached Reactions */}
+                {/* Attached Reactions */}
                 {msg.reactions && Object.keys(msg.reactions).length > 0 && (
                   <div className={`flex flex-wrap gap-1 mt-1 ${isMe ? 'mr-1' : 'ml-1'}`}>
                     {Object.entries(msg.reactions).map(([emoji, uids]) => (
                       <button
+                        type="button"
                         key={emoji}
                         onClick={() => profile && handleToggleReaction(msg.id, emoji)}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[6px] text-[12px] border cursor-pointer transition-colors duration-150 ${
                           profile && uids.includes(profile.uid)
-                            ? 'bg-indigo-950/70 border-indigo-500/50 text-indigo-300'
-                            : 'bg-slate-900/80 border-slate-800 text-slate-300'
+                            ? 'bg-[var(--bg-raised)] border-[var(--accent)] text-[var(--text-primary)]'
+                            : 'bg-[var(--bg-surface)] border-[var(--border-hairline)] text-[var(--text-secondary)]'
                         }`}
                       >
                         <span>{emoji}</span>
-                        <span className="text-[10px] font-medium">{uids.length}</span>
+                        <span className="text-[11px] font-mono tabular-nums">{uids.length}</span>
                       </button>
                     ))}
                   </div>
@@ -308,55 +330,56 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ chat, onBack, onReportUser, 
 
       {/* Reply or Edit Banner */}
       {(replyingTo || editingMessage) && (
-        <div className="px-4 py-2 bg-slate-900/90 border-t border-slate-800 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 truncate text-slate-300">
+        <div className="px-4 py-2 bg-[var(--bg-sidebar)] border-t border-[var(--border-hairline)] flex items-center justify-between text-[13px]">
+          <div className="flex items-center gap-2 truncate text-[var(--text-secondary)]">
             {replyingTo ? (
               <>
-                <Reply className="w-4 h-4 text-indigo-400 shrink-0" />
-                <span className="truncate">Replying to message: "{replyingTo.text}"</span>
+                <Reply size={14} strokeWidth={1.5} className="text-[var(--accent)] shrink-0" />
+                <span className="truncate">Replying to "{replyingTo.text}"</span>
               </>
             ) : (
               <>
-                <Edit2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <Edit2 size={14} strokeWidth={1.5} className="text-[var(--accent)] shrink-0" />
                 <span className="truncate">Editing message</span>
               </>
             )}
           </div>
           <button
+            type="button"
             onClick={() => {
               setReplyingTo(null);
               setEditingMessage(null);
               setText('');
             }}
-            className="p-1 text-slate-400 hover:text-white"
+            className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
           >
-            <X className="w-4 h-4" />
+            <X size={15} strokeWidth={1.5} />
           </button>
         </div>
       )}
 
       {/* Bottom Text Input Bar */}
-      <form 
-        onSubmit={handleSend} 
-        className="p-2.5 md:p-4 bg-[#0f1420] border-t border-slate-800/80 flex items-center gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+      <form
+        onSubmit={handleSend}
+        className="p-3 md:p-4 bg-[var(--bg-sidebar)] border-t border-[var(--border-hairline)] flex items-center gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
       >
         <input
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Type a message..."
+          placeholder="Message"
           autoFocus={false}
-          className="flex-1 bg-slate-900/90 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          className="flex-1 h-11 bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-[10px] px-3.5 text-[14px] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors duration-150"
         />
         <button
           type="submit"
           disabled={!text.trim()}
-          className="p-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white rounded-2xl transition-all cursor-pointer shadow-lg shadow-indigo-600/20 shrink-0"
+          className="h-11 w-11 flex items-center justify-center bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] disabled:opacity-40 text-[var(--btn-primary-text)] rounded-[10px] transition-[background-color,transform] duration-150 active:scale-[0.97] cursor-pointer shrink-0"
+          title="Send"
         >
-          <Send className="w-4 h-4" />
+          <Send size={16} strokeWidth={1.5} />
         </button>
       </form>
     </div>
   );
 };
-

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Lock, Users, Sparkles } from 'lucide-react';
+import { Lock, Users, ShieldCheck, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { isDemoMode } from '../lib/firebase';
 
@@ -8,60 +8,60 @@ export const LoginView: React.FC = () => {
   const { signInWithGoogle, switchDemoUser } = useAuth();
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden bg-[#0a0d14]">
-      {/* Background ambient lighting */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[550px] h-[550px] bg-indigo-600/10 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute -bottom-10 right-1/4 w-[400px] h-[400px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none" />
-
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+    <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--bg-canvas)] text-[var(--text-primary)]">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="w-full max-w-md"
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-[420px]"
       >
-        <div className="relative bg-[#111622]/90 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-8 shadow-2xl shadow-black/60">
-          {/* Logo & Header */}
-          <div className="flex flex-col items-center text-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-500 p-0.5 shadow-lg shadow-indigo-500/20 mb-4 flex items-center justify-center">
-              <div className="w-full h-full bg-[#0d121c] rounded-[14px] flex items-center justify-center">
-                <Shield className="w-8 h-8 text-indigo-400" />
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-hairline)] rounded-[16px] p-6 md:p-8">
+          {/* Flat Wordmark & Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-2.5 mb-6">
+              <div className="w-8 h-8 rounded-[8px] bg-[var(--bg-raised)] border border-[var(--border-hairline)] flex items-center justify-center text-[var(--text-primary)]">
+                <Lock size={16} strokeWidth={1.5} />
               </div>
+              <span className="text-[16px] font-medium tracking-tight text-[var(--text-primary)]">
+                Private Messenger
+              </span>
             </div>
-            
-            <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              Private Messenger
+
+            <h1 className="text-[28px] leading-[1.15] font-medium text-[var(--text-primary)]">
+              Quiet messaging for your circle
             </h1>
-            <p className="text-sm text-slate-400 mt-2 max-w-xs">
-              A private, invite-only messaging space built exclusively for a close circle of friends.
+            <p className="text-[14px] leading-[20px] text-[var(--text-secondary)] mt-2">
+              Invite-only, end-to-end encrypted conversations with zero ads and zero tracking.
             </p>
           </div>
 
-          {/* Features badge list */}
-          <div className="grid grid-cols-2 gap-2.5 mb-8">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900/60 border border-slate-800/60 text-xs text-slate-300">
-              <Lock className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Closed & Private</span>
+          {/* Quiet Spec Rows */}
+          <div className="grid grid-cols-2 gap-2 mb-6">
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-[10px] bg-[var(--bg-canvas)] border border-[var(--border-hairline)] text-[13px] text-[var(--text-secondary)]">
+              <Lock size={16} strokeWidth={1.5} className="text-[var(--text-muted)] shrink-0" />
+              <span>E2E encrypted</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900/60 border border-slate-800/60 text-xs text-slate-300">
-              <Users className="w-4 h-4 text-indigo-400 shrink-0" />
-              <span>Admin Approved</span>
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-[10px] bg-[var(--bg-canvas)] border border-[var(--border-hairline)] text-[13px] text-[var(--text-secondary)]">
+              <Users size={16} strokeWidth={1.5} className="text-[var(--text-muted)] shrink-0" />
+              <span>Admin approved</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900/60 border border-slate-800/60 text-xs text-slate-300">
-              <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>Zero Ads / ₹0 Free</span>
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-[10px] bg-[var(--bg-canvas)] border border-[var(--border-hairline)] text-[13px] text-[var(--text-secondary)]">
+              <ShieldCheck size={16} strokeWidth={1.5} className="text-[var(--text-muted)] shrink-0" />
+              <span>Zero ads</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900/60 border border-slate-800/60 text-xs text-slate-300">
-              <Shield className="w-4 h-4 text-violet-400 shrink-0" />
-              <span>No AI Tracking</span>
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-[10px] bg-[var(--bg-canvas)] border border-[var(--border-hairline)] text-[13px] text-[var(--text-secondary)]">
+              <EyeOff size={16} strokeWidth={1.5} className="text-[var(--text-muted)] shrink-0" />
+              <span>No AI tracking</span>
             </div>
           </div>
 
-          {/* Google Sign-in Button */}
+          {/* Primary Action */}
           <button
+            type="button"
             onClick={() => signInWithGoogle()}
-            className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl font-medium text-slate-100 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/25 cursor-pointer"
+            className="w-full h-11 flex items-center justify-center gap-2.5 px-4 rounded-[10px] text-[14px] font-medium bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)] active:scale-[0.98] transition-[background-color,transform] duration-150 cursor-pointer"
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -79,54 +79,57 @@ export const LoginView: React.FC = () => {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            <span>Sign In with Google</span>
+            <span>Sign in with Google</span>
           </button>
 
-          {/* Quick Sandbox / Switch Persona (Available in Demo Mode) */}
+          {/* Sandbox Persona Switcher (Demo Mode only) */}
           {isDemoMode && (
-            <div className="mt-6 pt-6 border-t border-slate-800/80">
-              <p className="text-xs text-center text-slate-400 mb-3 font-medium">
-                Demo Exploration Mode (Choose a test persona):
+            <div className="mt-6 pt-5 border-t border-[var(--border-hairline)]">
+              <p className="text-[12px] text-[var(--text-muted)] mb-3">
+                Demo sandbox personas
               </p>
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-2 gap-2">
                 <button
+                  type="button"
                   onClick={() => switchDemoUser('demo-admin-1')}
-                  className="px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 text-left border border-slate-700/60"
+                  className="px-3 py-2 rounded-[8px] bg-[var(--bg-canvas)] hover:bg-[var(--bg-raised)] text-left border border-[var(--border-hairline)] transition-colors duration-150 cursor-pointer"
                 >
-                  <p className="font-semibold text-indigo-300">Karthik (Admin)</p>
-                  <p className="text-[10px] text-slate-400">Approved • Admin</p>
+                  <p className="text-[13px] font-medium text-[var(--text-primary)]">Karthik</p>
+                  <p className="text-[12px] text-[var(--text-muted)] font-mono">Admin</p>
                 </button>
                 <button
+                  type="button"
                   onClick={() => switchDemoUser('demo-friend-1')}
-                  className="px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 text-left border border-slate-700/60"
+                  className="px-3 py-2 rounded-[8px] bg-[var(--bg-canvas)] hover:bg-[var(--bg-raised)] text-left border border-[var(--border-hairline)] transition-colors duration-150 cursor-pointer"
                 >
-                  <p className="font-semibold text-slate-200">Aravind</p>
-                  <p className="text-[10px] text-slate-400">Approved Member</p>
+                  <p className="text-[13px] font-medium text-[var(--text-primary)]">Aravind</p>
+                  <p className="text-[12px] text-[var(--text-muted)] font-mono">Member</p>
                 </button>
                 <button
+                  type="button"
                   onClick={() => switchDemoUser('demo-friend-2')}
-                  className="px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 text-left border border-slate-700/60"
+                  className="px-3 py-2 rounded-[8px] bg-[var(--bg-canvas)] hover:bg-[var(--bg-raised)] text-left border border-[var(--border-hairline)] transition-colors duration-150 cursor-pointer"
                 >
-                  <p className="font-semibold text-slate-200">Sneha</p>
-                  <p className="text-[10px] text-slate-400">Approved Member</p>
+                  <p className="text-[13px] font-medium text-[var(--text-primary)]">Sneha</p>
+                  <p className="text-[12px] text-[var(--text-muted)] font-mono">Member</p>
                 </button>
                 <button
+                  type="button"
                   onClick={() => switchDemoUser('demo-pending-1')}
-                  className="px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 text-left border border-slate-700/60"
+                  className="px-3 py-2 rounded-[8px] bg-[var(--bg-canvas)] hover:bg-[var(--bg-raised)] text-left border border-[var(--border-hairline)] transition-colors duration-150 cursor-pointer"
                 >
-                  <p className="font-semibold text-amber-300">Rohit</p>
-                  <p className="text-[10px] text-slate-400">Pending Approval</p>
+                  <p className="text-[13px] font-medium text-[var(--semantic-warning)]">Rohit</p>
+                  <p className="text-[12px] text-[var(--text-muted)] font-mono">Pending</p>
                 </button>
               </div>
             </div>
           )}
 
-          <p className="mt-6 text-[11px] text-center text-slate-500">
-            Protected by Firebase App Check & Firestore Rules.
+          <p className="mt-5 text-[12px] text-[var(--text-muted)] text-center">
+            Protected by Firebase Security Rules
           </p>
         </div>
       </motion.div>
     </div>
   );
 };
-

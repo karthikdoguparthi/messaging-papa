@@ -28,37 +28,41 @@ export const ReportModal: React.FC<ReportModalProps> = ({ targetUser, onClose })
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-[#121722] border border-slate-800 rounded-2xl p-6 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px]">
+      <div
+        className="w-full max-w-md bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-[16px] p-6 relative"
+        style={{ boxShadow: 'var(--shadow-floating)' }}
+      >
         <button
+          type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 text-slate-400 hover:text-white"
+          className="absolute right-4 top-4 p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] rounded-[6px] cursor-pointer"
         >
-          <X className="w-5 h-5" />
+          <X size={18} strokeWidth={1.5} />
         </button>
 
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
-            <ShieldAlert className="w-5 h-5" />
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-10 h-10 rounded-[10px] bg-[var(--bg-raised)] border border-[var(--border-hairline)] text-[var(--semantic-warning)] flex items-center justify-center">
+            <ShieldAlert size={18} strokeWidth={1.5} />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">Report @{targetUser.username}</h3>
-            <p className="text-xs text-slate-400">Reports are reviewed strictly by administrators.</p>
+            <h3 className="text-[16px] font-medium text-[var(--text-primary)]">Report @{targetUser.username}</h3>
+            <p className="text-[13px] text-[var(--text-secondary)]">Reviewed by administrators</p>
           </div>
         </div>
 
         {done ? (
-          <div className="py-8 text-center text-emerald-400 text-sm font-medium">
-            Thank you. Your report has been submitted for administrative review.
+          <div className="py-8 text-center text-[var(--semantic-positive)] text-[14px] font-medium">
+            Report submitted for review
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">Reason</label>
+              <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">Reason</label>
               <select
                 value={reason}
                 onChange={(e) => setReason(e.target.value as ReportItem['reason'])}
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                className="w-full h-10 px-3 bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-[8px] text-[14px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
               >
                 <option value="spam">Spam or unwanted messages</option>
                 <option value="harassment">Harassment or bullying</option>
@@ -69,22 +73,22 @@ export const ReportModal: React.FC<ReportModalProps> = ({ targetUser, onClose })
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">Details</label>
+              <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">Details</label>
               <textarea
                 rows={3}
                 value={details}
                 onChange={(e) => setDetails(e.target.value)}
-                placeholder="Describe what occurred..."
-                className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"
+                placeholder="Describe what happened"
+                className="w-full p-3 bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-[8px] text-[14px] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] resize-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-2.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white rounded-xl text-xs font-semibold transition-colors"
+              className="w-full h-10 bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] disabled:opacity-50 text-[var(--btn-primary-text)] rounded-[8px] text-[13px] font-medium transition-colors duration-150 cursor-pointer"
             >
-              {submitting ? 'Submitting...' : 'Submit Report'}
+              {submitting ? 'Submitting' : 'Submit report'}
             </button>
           </form>
         )}
@@ -92,4 +96,3 @@ export const ReportModal: React.FC<ReportModalProps> = ({ targetUser, onClose })
     </div>
   );
 };
-

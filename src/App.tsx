@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  MessageSquare, 
-  Users, 
-  Compass, 
-  ShieldCheck, 
-  Settings as SettingsIcon, 
-  Bell, 
-  Plus, 
-  Search,
-  LogOut
+import {
+  MessageSquare,
+  Users,
+  Compass,
+  ShieldCheck,
+  Settings as SettingsIcon,
+  Bell,
+  Plus,
+  Lock
 } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { LoginView } from './components/LoginView';
@@ -29,7 +28,7 @@ import { isDemoMode } from './lib/firebase';
 type TabView = 'chats' | 'friends' | 'discover' | 'admin';
 
 export const App: React.FC = () => {
-  const { user, profile, isAdmin, loading, signOut, switchDemoUser } = useAuth();
+  const { user, profile, isAdmin, loading, switchDemoUser } = useAuth();
 
   const [activeTab, setActiveTab] = useState<TabView>('chats');
   const [chats, setChats] = useState<Chat[]>([]);
@@ -45,7 +44,7 @@ export const App: React.FC = () => {
 
   // Total unread messages across all chats
   const totalUnreadMessages = chats.reduce((acc, c) => {
-    if (c.pinned) return acc; // Don't count self notes as unread
+    if (c.pinned) return acc;
     const count = Number((profile?.uid && c.unreadCounts?.[profile.uid]) ?? c.unreadCount ?? 0);
     return acc + (isNaN(count) ? 0 : count);
   }, 0);
@@ -61,15 +60,13 @@ export const App: React.FC = () => {
   useEffect(() => {
     if (!profile || profile.accountStatus !== 'approved') return;
 
-    // Ensure self-chat document exists so user can message themselves right away
     chatService.getOrCreateChat(profile.uid, profile.uid).catch(console.warn);
 
     const unsubChats = chatService.subscribeUserChats(profile.uid, (loadedChats) => {
-      // Pin self-chat to top, with other chats sorted by latest message
       const selfChatId = `chat_self_${profile.uid}`;
       const selfIndex = loadedChats.findIndex(c => c.id === selfChatId || (c.members.length === 2 && c.members[0] === profile.uid && c.members[1] === profile.uid));
-      
-      let orderedChats = [...loadedChats];
+
+      const orderedChats = [...loadedChats];
       if (selfIndex !== -1) {
         const [selfChat] = orderedChats.splice(selfIndex, 1);
         selfChat.pinned = true;
@@ -79,7 +76,6 @@ export const App: React.FC = () => {
         };
         orderedChats.unshift(selfChat);
       } else {
-        // If self chat not yet in list snapshot, add virtual pinned item
         const virtualSelfChat: Chat = {
           id: selfChatId,
           type: 'direct',
@@ -87,7 +83,7 @@ export const App: React.FC = () => {
           createdAt: profile.createdAt,
           createdBy: profile.uid,
           pinned: true,
-          lastMessageText: 'Message yourself / Personal notes',
+          lastMessageText: 'Personal notes',
           otherMember: {
             ...profile,
             displayName: `${profile.displayName} (You)`,
@@ -109,26 +105,22 @@ export const App: React.FC = () => {
     };
   }, [profile?.uid, profile?.accountStatus]);
 
-  // Loading indicator
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0d14] text-slate-400 text-sm">
-        <div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin mb-2" />
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-canvas)] text-[var(--text-muted)] text-[13px]">
+        <div className="w-6 h-6 rounded-full border-2 border-[var(--text-muted)] border-t-transparent animate-spin" />
       </div>
     );
   }
 
-  // Not signed in
   if (!user) {
     return <LoginView />;
   }
 
-  // Profile not completed (needs username)
   if (!profile) {
     return <ProfileSetupView />;
   }
 
-  // Pending approval or blocked account
   if (profile.accountStatus !== 'approved') {
     return <AccountStatusBanner />;
   }
@@ -151,172 +143,189 @@ export const App: React.FC = () => {
       setActiveChatId(chatId);
       setActiveTab('chats');
     } catch (err) {
-      console.error("Failed to start chat:", err);
+      console.error('Failed to start chat:', err);
     }
   };
 
   const handleBlockUser = async (targetUser: UserProfile) => {
     if (!profile) return;
-    if (confirm(`Block @${targetUser.username}? You won't be able to chat.`)) {
+    if (confirm(`Block @${targetUser.username}?`)) {
       await privacyService.blockMember(profile.uid, targetUser.uid);
       setActiveChatId(null);
+      setActiveChatOverride(null);
     }
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#0a0d14] text-slate-100">
+    <div className="flex h-screen w-screen overflow-hidden bg-[var(--bg-canvas)] text-[var(--text-primary)]">
       {/* 1. Left Nav Rail (Desktop & Tablet) */}
-      <nav className="hidden md:flex flex-col items-center justify-between py-5 px-3 w-18 bg-[#0b0f19] border-r border-slate-800/80 z-20">
-        <div className="flex flex-col items-center gap-6">
-          {/* Logo mark */}
-          <div className="w-11 h-11 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30">
-            <span className="font-extrabold text-base tracking-tight text-white">PM</span>
+      <nav className="hidden md:flex flex-col items-center justify-between py-4 px-2.5 w-16 bg-[var(--bg-rail)] border-r border-[var(--border-hairline)] z-20">
+        <div className="flex flex-col items-center gap-5">
+          {/* Flat Wordmark / Mark */}
+          <div
+            className="w-9 h-9 rounded-[8px] bg-[var(--bg-surface)] border border-[var(--border-hairline)] flex items-center justify-center text-[var(--text-primary)]"
+            title="Private Messenger"
+          >
+            <Lock size={16} strokeWidth={1.5} />
           </div>
 
           {/* Navigation icons */}
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-2">
             <button
-              onClick={() => { setActiveTab('chats'); }}
+              type="button"
+              onClick={() => setActiveTab('chats')}
               title="Chats"
-              className={`p-3 rounded-2xl transition-all relative ${
+              className={`w-10 h-10 rounded-[8px] flex items-center justify-center transition-colors duration-150 relative cursor-pointer ${
                 activeTab === 'chats'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-[var(--bg-raised)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]'
               }`}
             >
-              <MessageSquare className="w-5 h-5" />
+              <MessageSquare size={18} strokeWidth={1.5} />
               {totalUnreadMessages > 0 && (
-                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500 text-white border-2 border-[#0b0f19] shadow">
+                <span className="absolute -top-1 -right-1 px-1 py-0.2 rounded-[5px] text-[10px] font-mono font-medium tabular-nums bg-[var(--accent)] text-[var(--accent-text)] border border-[var(--bg-rail)]">
                   {totalUnreadMessages > 99 ? '99+' : totalUnreadMessages}
                 </span>
               )}
             </button>
 
             <button
-              onClick={() => { setActiveTab('friends'); }}
+              type="button"
+              onClick={() => setActiveTab('friends')}
               title="Friends"
-              className={`p-3 rounded-2xl transition-all ${
+              className={`w-10 h-10 rounded-[8px] flex items-center justify-center transition-colors duration-150 cursor-pointer ${
                 activeTab === 'friends'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-[var(--bg-raised)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]'
               }`}
             >
-              <Users className="w-5 h-5" />
+              <Users size={18} strokeWidth={1.5} />
             </button>
 
             <button
-              onClick={() => { setActiveTab('discover'); }}
-              title="Discover Members"
-              className={`p-3 rounded-2xl transition-all ${
+              type="button"
+              onClick={() => setActiveTab('discover')}
+              title="Discover"
+              className={`w-10 h-10 rounded-[8px] flex items-center justify-center transition-colors duration-150 cursor-pointer ${
                 activeTab === 'discover'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-[var(--bg-raised)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]'
               }`}
             >
-              <Compass className="w-5 h-5" />
+              <Compass size={18} strokeWidth={1.5} />
             </button>
 
             {isAdmin && (
               <button
-                onClick={() => { setActiveTab('admin'); }}
-                title="Admin Governance"
-                className={`p-3 rounded-2xl transition-all ${
+                type="button"
+                onClick={() => setActiveTab('admin')}
+                title="Governance"
+                className={`w-10 h-10 rounded-[8px] flex items-center justify-center transition-colors duration-150 cursor-pointer ${
                   activeTab === 'admin'
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                    : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
+                    ? 'bg-[var(--bg-raised)] text-[var(--text-primary)]'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]'
                 }`}
               >
-                <ShieldCheck className="w-5 h-5" />
+                <ShieldCheck size={18} strokeWidth={1.5} />
               </button>
             )}
           </div>
         </div>
 
         {/* Bottom Rail Controls */}
-        <div className="flex flex-col items-center gap-3">
-          {/* Notification Button */}
+        <div className="flex flex-col items-center gap-2">
           <div className="relative">
             <button
+              type="button"
               onClick={() => setShowNotificationsMenu(!showNotificationsMenu)}
-              className="p-3 text-slate-400 hover:text-white rounded-2xl hover:bg-slate-800/60 transition-colors relative"
+              title="Notifications"
+              className="w-10 h-10 text-[var(--text-muted)] hover:text-[var(--text-primary)] rounded-[8px] hover:bg-[var(--bg-surface)] transition-colors duration-150 relative flex items-center justify-center cursor-pointer"
             >
-              <Bell className="w-5 h-5" />
+              <Bell size={18} strokeWidth={1.5} />
               {unreadNotifsCount > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-[#0b0f19]" />
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[var(--accent)]" />
               )}
             </button>
 
-            {/* Notification Menu Dropdown */}
             {showNotificationsMenu && (
-              <div className="absolute left-16 bottom-0 w-72 bg-[#121722] border border-slate-800 rounded-2xl shadow-2xl p-3 z-50">
-                <h4 className="text-xs font-semibold text-slate-300 mb-2 px-1">Notifications</h4>
+              <div
+                className="absolute left-14 bottom-0 w-72 bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-[12px] p-3 z-50"
+                style={{ boxShadow: 'var(--shadow-floating)' }}
+              >
+                <h4 className="text-[13px] font-medium text-[var(--text-primary)] mb-2 px-1">Notifications</h4>
                 <div className="space-y-1.5 max-h-60 overflow-y-auto">
                   {notifications.length > 0 ? (
                     notifications.map(n => (
                       <div
                         key={n.id}
                         onClick={() => notificationService.markAsRead(n.id)}
-                        className={`p-2.5 rounded-xl text-xs cursor-pointer ${
-                          n.read ? 'bg-slate-900/30 text-slate-400' : 'bg-indigo-950/40 text-slate-200 border-l-2 border-indigo-500'
+                        className={`p-2.5 rounded-[8px] text-[13px] cursor-pointer transition-colors duration-150 ${
+                          n.read
+                            ? 'bg-[var(--bg-canvas)] text-[var(--text-muted)]'
+                            : 'bg-[var(--bg-raised)] text-[var(--text-primary)] border-l-2 border-[var(--accent)]'
                         }`}
                       >
                         <p className="font-medium">
-                          {n.type === 'friend_request' && 'New friend request received'}
-                          {n.type === 'friend_accepted' && 'Friend request accepted!'}
+                          {n.type === 'friend_request' && 'Friend request received'}
+                          {n.type === 'friend_accepted' && 'Friend request accepted'}
                           {n.type === 'new_message' && 'New private message'}
                         </p>
-                        <p className="text-[10px] text-slate-500 mt-0.5">
+                        <p className="text-[11px] font-mono tabular-nums text-[var(--text-muted)] mt-0.5">
                           {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-slate-500 text-center py-4">No notifications yet.</p>
+                    <p className="text-[13px] text-[var(--text-muted)] text-center py-4">No notifications</p>
                   )}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Profile & Settings Trigger */}
           <button
+            type="button"
             onClick={() => setShowSettings(true)}
-            className="p-1.5 rounded-2xl border border-slate-700/80 hover:border-indigo-500 transition-colors"
+            title="Settings"
+            className="p-1 rounded-[10px] border border-[var(--border-hairline)] hover:border-[var(--border-strong)] transition-colors duration-150 cursor-pointer"
           >
             <img
               src={profile.photoURL}
               alt={profile.displayName}
-              className="w-8 h-8 rounded-xl object-cover"
+              className="w-8 h-8 rounded-[7px] object-cover"
             />
           </button>
         </div>
       </nav>
 
-      {/* 2. Middle Column: Conversations sidebar (Desktop) or Active Tab on mobile */}
-      <div className={`w-full md:w-80 lg:w-96 flex flex-col h-full bg-[#0e121c] border-r border-slate-800/80 ${
+      {/* 2. Middle Column: Conversations sidebar */}
+      <div className={`w-full md:w-72 lg:w-80 flex flex-col h-full bg-[var(--bg-sidebar)] border-r border-[var(--border-hairline)] ${
         activeChat ? 'hidden md:flex' : (activeTab === 'chats' ? 'flex' : 'hidden md:flex')
       }`}>
         {/* Header */}
-        <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
-          <div>
-            <h1 className="font-bold text-lg text-white">Private Circle</h1>
-            <p className="text-xs text-slate-400">@{profile.username}</p>
+        <div className="h-16 px-4 border-b border-[var(--border-hairline)] flex items-center justify-between shrink-0">
+          <div className="min-w-0">
+            <h1 className="font-medium text-[16px] text-[var(--text-primary)] truncate">Private Circle</h1>
+            <p className="text-[12px] text-[var(--text-muted)] font-mono truncate">@{profile.username}</p>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
+              type="button"
               onClick={() => setActiveTab('friends')}
-              title="Start chat with friend"
-              className="p-2 rounded-xl bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all cursor-pointer flex items-center gap-1 text-xs font-medium"
+              title="New chat"
+              className="px-2.5 h-8 rounded-[8px] bg-[var(--bg-raised)] hover:bg-[var(--border-strong)] text-[var(--text-primary)] border border-[var(--border-hairline)] transition-colors duration-150 cursor-pointer flex items-center gap-1.5 text-[13px] font-medium"
             >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">New Chat</span>
+              <Plus size={15} strokeWidth={1.5} />
+              <span className="hidden sm:inline">New</span>
             </button>
             <button
+              type="button"
               onClick={() => setShowSettings(true)}
-              className="md:hidden p-2 text-slate-400 hover:text-white"
+              className="md:hidden p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              title="Settings"
             >
-              <SettingsIcon className="w-4 h-4" />
+              <SettingsIcon size={18} strokeWidth={1.5} />
             </button>
           </div>
         </div>
@@ -343,26 +352,29 @@ export const App: React.FC = () => {
           }}
         />
 
-        {/* Demo Switcher Quick Bar if in Demo Mode */}
+        {/* Demo Switcher Quick Bar */}
         {isDemoMode && (
-          <div className="p-3 bg-slate-900/60 border-t border-slate-800 text-[11px] flex items-center justify-between">
-            <span className="text-slate-400">Demo Persona:</span>
+          <div className="p-3 bg-[var(--bg-rail)] border-t border-[var(--border-hairline)] text-[12px] flex items-center justify-between">
+            <span className="text-[var(--text-muted)]">Persona</span>
             <div className="flex gap-1">
               <button
+                type="button"
                 onClick={() => switchDemoUser('demo-admin-1')}
-                className="px-2 py-0.5 rounded bg-slate-800 hover:bg-indigo-600 text-indigo-300 hover:text-white"
+                className="px-2 py-1 rounded-[6px] bg-[var(--bg-surface)] hover:bg-[var(--bg-raised)] text-[var(--text-primary)] border border-[var(--border-hairline)] cursor-pointer"
               >
                 Admin
               </button>
               <button
+                type="button"
                 onClick={() => switchDemoUser('demo-friend-1')}
-                className="px-2 py-0.5 rounded bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white"
+                className="px-2 py-1 rounded-[6px] bg-[var(--bg-surface)] hover:bg-[var(--bg-raised)] text-[var(--text-secondary)] border border-[var(--border-hairline)] cursor-pointer"
               >
                 Aravind
               </button>
               <button
+                type="button"
                 onClick={() => switchDemoUser('demo-friend-2')}
-                className="px-2 py-0.5 rounded bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white"
+                className="px-2 py-1 rounded-[6px] bg-[var(--bg-surface)] hover:bg-[var(--bg-raised)] text-[var(--text-secondary)] border border-[var(--border-hairline)] cursor-pointer"
               >
                 Sneha
               </button>
@@ -371,8 +383,8 @@ export const App: React.FC = () => {
         )}
       </div>
 
-      {/* 3. Main Content: Active Chat or Alternative Tab View */}
-      <div className={`flex-1 flex flex-col h-full bg-[#0a0d14] relative overflow-hidden pb-16 md:pb-0 ${
+      {/* 3. Main Content */}
+      <div className={`flex-1 flex flex-col h-full bg-[var(--bg-canvas)] relative overflow-hidden pb-16 md:pb-0 ${
         !activeChat && activeTab === 'chats' ? 'hidden md:flex' : 'flex'
       }`}>
         {activeTab === 'discover' && (
@@ -400,38 +412,38 @@ export const App: React.FC = () => {
               onBlockUser={handleBlockUser}
             />
           ) : (
-            <div className="hidden md:flex flex-1 flex-col items-center justify-center p-8 text-center text-slate-500">
-              <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mb-4">
-                <MessageSquare className="w-8 h-8" />
+            <div className="hidden md:flex flex-1 flex-col items-center justify-center p-8 text-center">
+              <div className="w-10 h-10 rounded-[10px] bg-[var(--bg-surface)] border border-[var(--border-hairline)] text-[var(--text-muted)] flex items-center justify-center mb-3">
+                <MessageSquare size={18} strokeWidth={1.5} />
               </div>
-              <h3 className="text-base font-semibold text-slate-300">Select a conversation</h3>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm">
-                Real-time, private and end-to-end invite-only messaging for your circle.
+              <h3 className="text-[15px] font-medium text-[var(--text-primary)]">Select a conversation</h3>
+              <p className="text-[13px] text-[var(--text-muted)] mt-1 max-w-xs">
+                End-to-end encrypted messaging for your circle
               </p>
             </div>
           )
         )}
       </div>
 
-      {/* 4. Mobile Bottom Nav Bar (Hidden when activeChat is open for full-screen chat experience) */}
-      <div className={`md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0e121c] border-t border-slate-800 flex items-center justify-around z-30 pb-[env(safe-area-inset-bottom)] ${
+      {/* 4. Mobile Bottom Nav Bar */}
+      <div className={`md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[var(--bg-sidebar)] border-t border-[var(--border-hairline)] flex items-center justify-around z-30 pb-[env(safe-area-inset-bottom)] ${
         activeChat ? 'hidden' : 'flex'
       }`}>
         <button
           type="button"
-          onClick={() => { 
-            setActiveTab('chats'); 
-            setActiveChatId(null); 
-            setActiveChatOverride(null); 
+          onClick={() => {
+            setActiveTab('chats');
+            setActiveChatId(null);
+            setActiveChatOverride(null);
           }}
-          className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-xs cursor-pointer touch-manipulation select-none active:bg-slate-800/40 ${
-            activeTab === 'chats' ? 'text-indigo-400 font-semibold' : 'text-slate-400'
+          className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-[12px] cursor-pointer touch-manipulation select-none ${
+            activeTab === 'chats' ? 'text-[var(--text-primary)] font-medium' : 'text-[var(--text-muted)]'
           }`}
         >
           <div className="relative pointer-events-none">
-            <MessageSquare className="w-5 h-5" />
+            <MessageSquare size={18} strokeWidth={1.5} />
             {totalUnreadMessages > 0 && (
-              <span className="absolute -top-1.5 -right-2 px-1 rounded-full text-[9px] font-bold bg-indigo-500 text-white min-w-4 text-center">
+              <span className="absolute -top-1.5 -right-2 px-1 rounded-[5px] text-[10px] font-mono tabular-nums bg-[var(--accent)] text-[var(--accent-text)] min-w-4 text-center">
                 {totalUnreadMessages > 99 ? '99+' : totalUnreadMessages}
               </span>
             )}
@@ -441,47 +453,47 @@ export const App: React.FC = () => {
 
         <button
           type="button"
-          onClick={() => { 
-            setActiveTab('friends'); 
-            setActiveChatId(null); 
-            setActiveChatOverride(null); 
+          onClick={() => {
+            setActiveTab('friends');
+            setActiveChatId(null);
+            setActiveChatOverride(null);
           }}
-          className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-xs cursor-pointer touch-manipulation select-none active:bg-slate-800/40 ${
-            activeTab === 'friends' ? 'text-indigo-400 font-semibold' : 'text-slate-400'
+          className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-[12px] cursor-pointer touch-manipulation select-none ${
+            activeTab === 'friends' ? 'text-[var(--text-primary)] font-medium' : 'text-[var(--text-muted)]'
           }`}
         >
-          <Users className="w-5 h-5 pointer-events-none" />
+          <Users size={18} strokeWidth={1.5} className="pointer-events-none" />
           <span className="pointer-events-none">Friends</span>
         </button>
 
         <button
           type="button"
-          onClick={() => { 
-            setActiveTab('discover'); 
-            setActiveChatId(null); 
-            setActiveChatOverride(null); 
+          onClick={() => {
+            setActiveTab('discover');
+            setActiveChatId(null);
+            setActiveChatOverride(null);
           }}
-          className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-xs cursor-pointer touch-manipulation select-none active:bg-slate-800/40 ${
-            activeTab === 'discover' ? 'text-indigo-400 font-semibold' : 'text-slate-400'
+          className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-[12px] cursor-pointer touch-manipulation select-none ${
+            activeTab === 'discover' ? 'text-[var(--text-primary)] font-medium' : 'text-[var(--text-muted)]'
           }`}
         >
-          <Compass className="w-5 h-5 pointer-events-none" />
+          <Compass size={18} strokeWidth={1.5} className="pointer-events-none" />
           <span className="pointer-events-none">Discover</span>
         </button>
 
         {isAdmin && (
           <button
             type="button"
-            onClick={() => { 
-              setActiveTab('admin'); 
-              setActiveChatId(null); 
-              setActiveChatOverride(null); 
+            onClick={() => {
+              setActiveTab('admin');
+              setActiveChatId(null);
+              setActiveChatOverride(null);
             }}
-            className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-xs cursor-pointer touch-manipulation select-none active:bg-slate-800/40 ${
-              activeTab === 'admin' ? 'text-amber-400 font-semibold' : 'text-slate-400'
+            className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-[12px] cursor-pointer touch-manipulation select-none ${
+              activeTab === 'admin' ? 'text-[var(--text-primary)] font-medium' : 'text-[var(--text-muted)]'
             }`}
           >
-            <ShieldCheck className="w-5 h-5 pointer-events-none" />
+            <ShieldCheck size={18} strokeWidth={1.5} className="pointer-events-none" />
             <span className="pointer-events-none">Admin</span>
           </button>
         )}
@@ -501,4 +513,3 @@ export const App: React.FC = () => {
     </div>
   );
 };
-

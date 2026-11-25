@@ -1,91 +1,73 @@
 @import "tailwindcss";
 
+:root,
+html.dark {
+  --bg-rail: #11100f;
+  --bg-sidebar: #151412;
+  --bg-canvas: #181715;
+  --bg-surface: #1f1d1b;
+  --bg-raised: #292623;
+  --border-hairline: rgba(239, 233, 222, 0.08);
+  --border-strong: rgba(239, 233, 222, 0.15);
+  --text-primary: #efe9de;
+  --text-secondary: #a8a196;
+  --text-muted: #7c766d;
+  --accent: #3e9c6d;
+  --accent-text: #11100f;
+  --btn-primary-bg: #efe9de;
+  --btn-primary-text: #151412;
+  --btn-primary-hover: #e2dacb;
+  --bubble-own-bg: #292623;
+  --bubble-own-text: #efe9de;
+  --bubble-other-bg: #1f1d1b;
+  --bubble-other-text: #efe9de;
+  --semantic-positive: #4cc38a;
+  --semantic-negative: #e5484d;
+  --semantic-warning: #d99b38;
+  --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+html.light {
+  --bg-rail: #f0ede6;
+  --bg-sidebar: #f6f3ed;
+  --bg-canvas: #fbfaf7;
+  --bg-surface: #ffffff;
+  --bg-raised: #ebe6dc;
+  --border-hairline: rgba(31, 27, 22, 0.08);
+  --border-strong: rgba(31, 27, 22, 0.16);
+  --text-primary: #1f1b16;
+  --text-secondary: #5e564c;
+  --text-muted: #82786c;
+  --accent: #257a50;
+  --accent-text: #ffffff;
+  --btn-primary-bg: #1f1b16;
+  --btn-primary-text: #fbfaf7;
+  --btn-primary-hover: #332d25;
+  --bubble-own-bg: #1f1b16;
+  --bubble-own-text: #fbfaf7;
+  --bubble-other-bg: #ffffff;
+  --bubble-other-text: #1f1b16;
+  --semantic-positive: #16a34a;
+  --semantic-negative: #dc2626;
+  --semantic-warning: #b45309;
+  --shadow-floating: 0 8px 24px rgba(31, 27, 22, 0.08);
+}
+
 @layer base {
   body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    font-family: 'Instrument Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    transition: background-color 180ms cubic-bezier(0.22, 1, 0.36, 1), color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 }
 
-/* Light Mode Overrides */
-html.light body {
-  background-color: #f1f5f9;
-  color: #0f172a;
-}
-
-html.light .bg-\[\#0a0d14\] {
-  background-color: #f8fafc !important;
-}
-
-html.light .bg-\[\#0b0f19\] {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-}
-
-html.light .bg-\[\#0e121c\] {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-}
-
-html.light .bg-\[\#0d111a\] {
-  background-color: #f8fafc !important;
-}
-
-html.light .bg-\[\#0f1420\] {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-}
-
-html.light .bg-\[\#111622\] {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-}
-
-html.light .bg-\[\#121722\] {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-}
-
-html.light .bg-\[\#151a26\] {
-  background-color: #f1f5f9 !important;
-  color: #0f172a !important;
-}
-
-html.light .bg-slate-900\/80,
-html.light .bg-slate-900\/90,
-html.light .bg-slate-900\/60,
-html.light .bg-slate-900\/50,
-html.light .bg-slate-900\/70,
-html.light .bg-slate-900 {
-  background-color: #f1f5f9 !important;
-  border-color: #e2e8f0 !important;
-}
-
-html.light .text-white {
-  color: #0f172a !important;
-}
-
-html.light .text-slate-100,
-html.light .text-slate-200 {
-  color: #1e293b !important;
-}
-
-html.light .text-slate-300,
-html.light .text-slate-400 {
-  color: #475569 !important;
-}
-
-html.light .border-slate-800,
-html.light .border-slate-800\/80,
-html.light .border-slate-800\/50,
-html.light .border-slate-800\/60,
-html.light .border-slate-700,
-html.light .border-slate-700\/80 {
-  border-color: #e2e8f0 !important;
-}
-
-html.light .divide-slate-800\/50 > :not([hidden]) ~ :not([hidden]) {
-  border-color: #f1f5f9 !important;
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Custom scrollbars */
@@ -99,10 +81,10 @@ html.light .divide-slate-800\/50 > :not([hidden]) ~ :not([hidden]) {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.3);
+  background: var(--border-strong);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.5);
+  background: var(--text-muted);
 }

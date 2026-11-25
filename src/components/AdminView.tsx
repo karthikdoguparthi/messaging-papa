@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ShieldCheck, UserCheck, UserX, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { ShieldCheck, UserX, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { UserProfile, ReportItem } from '../types';
 import { adminService } from '../services/adminService';
 
@@ -18,8 +18,6 @@ export const AdminView: React.FC = () => {
   }, []);
 
   const pendingMembers = members.filter(m => m.accountStatus === 'pending');
-  const approvedMembers = members.filter(m => m.accountStatus === 'approved');
-  const blockedMembers = members.filter(m => m.accountStatus === 'blocked');
 
   const handleApprove = async (uid: string) => {
     await adminService.approveUser(uid);
@@ -40,42 +38,50 @@ export const AdminView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0d111a] overflow-y-auto p-4 md:p-8">
+    <div className="flex-1 flex flex-col h-full bg-[var(--bg-canvas)] overflow-y-auto p-6 md:p-8">
       <div className="max-w-4xl mx-auto w-full">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-[var(--border-hairline)]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
-              <ShieldCheck className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-[10px] bg-[var(--bg-surface)] text-[var(--text-secondary)] flex items-center justify-center border border-[var(--border-hairline)]">
+              <ShieldCheck size={18} strokeWidth={1.5} />
             </div>
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight">Admin Governance</h2>
-              <p className="text-xs text-slate-400">Invite-only approval pipeline and moderation controls.</p>
+              <h2 className="text-[24px] leading-[1.2] font-medium text-[var(--text-primary)]">Governance</h2>
+              <p className="text-[13px] text-[var(--text-secondary)]">Member approvals and moderation</p>
             </div>
           </div>
 
-          {/* Navigation Pill */}
-          <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs font-medium">
+          <div className="flex bg-[var(--bg-surface)] p-1 rounded-[10px] border border-[var(--border-hairline)] text-[13px] font-medium self-start">
             <button
+              type="button"
               onClick={() => setActiveTab('approvals')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                activeTab === 'approvals' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+              className={`px-3 py-1.5 rounded-[7px] transition-colors duration-150 cursor-pointer tabular-nums ${
+                activeTab === 'approvals'
+                  ? 'bg-[var(--bg-raised)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
               Approvals ({pendingMembers.length})
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab('members')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                activeTab === 'members' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+              className={`px-3 py-1.5 rounded-[7px] transition-colors duration-150 cursor-pointer tabular-nums ${
+                activeTab === 'members'
+                  ? 'bg-[var(--bg-raised)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
               Members ({members.length})
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab('reports')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                activeTab === 'reports' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+              className={`px-3 py-1.5 rounded-[7px] transition-colors duration-150 cursor-pointer tabular-nums ${
+                activeTab === 'reports'
+                  ? 'bg-[var(--bg-raised)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
               Reports ({reports.filter(r => r.status === 'pending').length})
@@ -85,51 +91,53 @@ export const AdminView: React.FC = () => {
 
         {/* Tab 1: Pending Approvals */}
         {activeTab === 'approvals' && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Waiting for Approval ({pendingMembers.length})
+          <div className="space-y-2.5">
+            <h3 className="text-[13px] font-medium text-[var(--text-secondary)] mb-2 tabular-nums">
+              Waiting for approval ({pendingMembers.length})
             </h3>
             {pendingMembers.length > 0 ? (
               pendingMembers.map((user) => (
                 <div
                   key={user.uid}
-                  className="flex items-center justify-between p-4 rounded-xl bg-[#121722] border border-amber-500/20"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-[12px] bg-[var(--bg-surface)] border border-[var(--border-hairline)]"
                 >
                   <div className="flex items-center gap-3">
                     <img
                       src={user.photoURL}
                       alt={user.displayName}
-                      className="w-11 h-11 rounded-full object-cover bg-slate-800"
+                      className="w-10 h-10 rounded-full object-cover bg-[var(--bg-raised)] border border-[var(--border-hairline)]"
                     />
                     <div>
-                      <p className="font-semibold text-sm text-slate-100">{user.displayName}</p>
-                      <p className="text-xs text-indigo-400 font-mono">@{user.username}</p>
-                      {user.bio && <p className="text-xs text-slate-400 mt-0.5">{user.bio}</p>}
+                      <p className="font-medium text-[14px] text-[var(--text-primary)]">{user.displayName}</p>
+                      <p className="text-[12px] text-[var(--text-muted)] font-mono">@{user.username}</p>
+                      {user.bio && <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">{user.bio}</p>}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <button
+                      type="button"
                       onClick={() => handleApprove(user.uid)}
-                      className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                      className="px-3.5 h-9 rounded-[8px] bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] text-[var(--btn-primary-text)] text-[13px] font-medium flex items-center gap-1.5 transition-colors duration-150 cursor-pointer"
                     >
-                      <CheckCircle className="w-4 h-4" />
+                      <CheckCircle size={15} strokeWidth={1.5} />
                       <span>Approve</span>
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleBlock(user.uid)}
-                      className="px-3.5 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                      className="px-3.5 h-9 rounded-[8px] bg-[var(--bg-raised)] hover:text-[var(--semantic-negative)] text-[var(--text-secondary)] border border-[var(--border-hairline)] text-[13px] font-medium flex items-center gap-1.5 transition-colors duration-150 cursor-pointer"
                     >
-                      <UserX className="w-4 h-4" />
-                      <span>Reject & Block</span>
+                      <UserX size={15} strokeWidth={1.5} />
+                      <span>Block</span>
                     </button>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="p-12 text-center text-slate-500 text-xs bg-slate-900/40 rounded-2xl border border-slate-800">
-                <Clock className="w-6 h-6 mx-auto mb-2 text-slate-600" />
-                No pending registrations. All members are verified.
+              <div className="p-10 text-center text-[var(--text-muted)] text-[13px] bg-[var(--bg-surface)] rounded-[12px] border border-[var(--border-hairline)]">
+                <Clock size={18} strokeWidth={1.5} className="mx-auto mb-2 text-[var(--text-muted)]" />
+                No pending registrations
               </div>
             )}
           </div>
@@ -137,31 +145,31 @@ export const AdminView: React.FC = () => {
 
         {/* Tab 2: All Members */}
         {activeTab === 'members' && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Registered Accounts ({members.length})
+          <div className="space-y-2">
+            <h3 className="text-[13px] font-medium text-[var(--text-secondary)] mb-2 tabular-nums">
+              Registered accounts ({members.length})
             </h3>
             {members.map((user) => (
               <div
                 key={user.uid}
-                className="flex items-center justify-between p-3.5 rounded-xl bg-[#121722] border border-slate-800"
+                className="flex items-center justify-between p-3.5 rounded-[12px] bg-[var(--bg-surface)] border border-[var(--border-hairline)]"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <img
                     src={user.photoURL}
                     alt={user.displayName}
-                    className="w-10 h-10 rounded-full object-cover bg-slate-800"
+                    className="w-10 h-10 rounded-full object-cover bg-[var(--bg-raised)] border border-[var(--border-hairline)] shrink-0"
                   />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-slate-100">{user.displayName}</span>
-                      <span className="text-xs text-indigo-400 font-mono">@{user.username}</span>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                        user.accountStatus === 'approved' 
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-[14px] text-[var(--text-primary)] truncate">{user.displayName}</span>
+                      <span className="text-[12px] text-[var(--text-muted)] font-mono">@{user.username}</span>
+                      <span className={`text-[11px] font-mono px-2 py-0.5 rounded-[5px] border border-[var(--border-hairline)] ${
+                        user.accountStatus === 'approved'
+                          ? 'text-[var(--semantic-positive)] bg-[var(--bg-canvas)]'
                           : user.accountStatus === 'pending'
-                          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                          ? 'text-[var(--semantic-warning)] bg-[var(--bg-canvas)]'
+                          : 'text-[var(--semantic-negative)] bg-[var(--bg-canvas)]'
                       }`}>
                         {user.accountStatus}
                       </span>
@@ -169,18 +177,20 @@ export const AdminView: React.FC = () => {
                   </div>
                 </div>
 
-                <div>
+                <div className="shrink-0 ml-3">
                   {user.accountStatus === 'blocked' ? (
                     <button
+                      type="button"
                       onClick={() => handleUnblock(user.uid)}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200"
+                      className="px-3 h-8 rounded-[8px] bg-[var(--bg-raised)] hover:bg-[var(--border-strong)] text-[13px] font-medium text-[var(--text-primary)] transition-colors duration-150 cursor-pointer"
                     >
                       Unblock
                     </button>
                   ) : (
                     <button
+                      type="button"
                       onClick={() => handleBlock(user.uid)}
-                      className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white text-xs font-medium transition-colors"
+                      className="px-3 h-8 rounded-[8px] bg-[var(--bg-raised)] hover:text-[var(--semantic-negative)] text-[var(--text-secondary)] border border-[var(--border-hairline)] text-[13px] font-medium transition-colors duration-150 cursor-pointer"
                     >
                       Suspend
                     </button>
@@ -193,45 +203,48 @@ export const AdminView: React.FC = () => {
 
         {/* Tab 3: Reports */}
         {activeTab === 'reports' && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              User Reports
+          <div className="space-y-2.5">
+            <h3 className="text-[13px] font-medium text-[var(--text-secondary)] mb-2">
+              User reports
             </h3>
             {reports.length > 0 ? (
               reports.map((report) => (
                 <div
                   key={report.id}
-                  className="p-4 rounded-xl bg-[#121722] border border-slate-800 flex items-start justify-between gap-4"
+                  className="p-4 rounded-[12px] bg-[var(--bg-surface)] border border-[var(--border-hairline)] flex items-start justify-between gap-4"
                 >
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <AlertTriangle className="w-4 h-4 text-amber-400" />
-                      <span className="text-sm font-semibold text-slate-200 uppercase">{report.reason}</span>
-                      <span className="text-xs text-slate-500">• {new Date(report.createdAt).toLocaleDateString()}</span>
+                      <AlertTriangle size={15} strokeWidth={1.5} className="text-[var(--semantic-warning)]" />
+                      <span className="text-[14px] font-medium text-[var(--text-primary)] capitalize">{report.reason}</span>
+                      <span className="text-[12px] text-[var(--text-muted)] font-mono tabular-nums">
+                        · {new Date(report.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
-                    <p className="text-xs text-slate-300 mt-1">{report.details || 'No additional details provided.'}</p>
-                    <p className="text-[11px] text-slate-500 mt-2 font-mono">
-                      Reported UID: {report.reportedUid} | By: {report.reporterUid}
+                    <p className="text-[13px] text-[var(--text-secondary)] mt-1">{report.details || 'No details provided'}</p>
+                    <p className="text-[12px] text-[var(--text-muted)] mt-2 font-mono">
+                      Target: {report.reportedUid} · Reporter: {report.reporterUid}
                     </p>
                   </div>
 
-                  <div>
+                  <div className="shrink-0">
                     {report.status !== 'resolved' ? (
                       <button
+                        type="button"
                         onClick={() => handleResolveReport(report.id)}
-                        className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold"
+                        className="px-3 h-8 rounded-[8px] bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] text-[var(--btn-primary-text)] text-[13px] font-medium transition-colors duration-150 cursor-pointer"
                       >
-                        Mark Resolved
+                        Resolve
                       </button>
                     ) : (
-                      <span className="text-xs text-emerald-400 font-medium">Resolved</span>
+                      <span className="text-[12px] font-mono text-[var(--semantic-positive)]">Resolved</span>
                     )}
                   </div>
                 </div>
               ))
             ) : (
-              <div className="p-8 text-center text-slate-500 text-xs bg-slate-900/40 rounded-2xl border border-slate-800">
-                No reports submitted. Community is clean.
+              <div className="p-8 text-center text-[var(--text-muted)] text-[13px] bg-[var(--bg-surface)] rounded-[12px] border border-[var(--border-hairline)]">
+                No reports submitted
               </div>
             )}
           </div>
@@ -240,4 +253,3 @@ export const AdminView: React.FC = () => {
     </div>
   );
 };
-

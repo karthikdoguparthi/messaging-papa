@@ -22,23 +22,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     const updateTheme = () => {
-      let isDark = true;
-      if (theme === 'system') {
-        isDark = mediaQuery.matches;
-      } else {
-        isDark = theme === 'dark';
-      }
-
+      const isDark = theme === 'system' ? mediaQuery.matches : theme === 'dark';
       setResolvedTheme(isDark ? 'dark' : 'light');
 
       if (isDark) {
         root.classList.add('dark');
         root.classList.remove('light');
-        document.body.style.backgroundColor = '#0a0d14';
       } else {
         root.classList.remove('dark');
         root.classList.add('light');
-        document.body.style.backgroundColor = '#f8fafc';
       }
     };
 
@@ -64,4 +56,3 @@ export const useTheme = () => {
   if (!ctx) throw new Error('useTheme must be used within ThemeProvider');
   return ctx;
 };
-
